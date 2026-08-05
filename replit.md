@@ -1,10 +1,11 @@
-# [Project name]
+# TBM AI BOT V2
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+TBM AI BOT V2 is a production-ready TypeScript foundation for a modular Telegram trading bot. Trading behavior is intentionally not implemented yet.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter tbm-ai-bot-v2 run dev` — run the Telegram bot in watch mode
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -19,26 +20,41 @@ _Replace the heading above with the project's name, and this line with one sente
 - Validation: Zod (`zod/v4`), `drizzle-zod`
 - API codegen: Orval (from OpenAPI spec)
 - Build: esbuild (CJS bundle)
+- Bot: Telegraf, Pino, node-cron, dotenv
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `tbm-ai-bot-v2/src/config` — validated environment configuration
+- `tbm-ai-bot-v2/src/logger` — structured application logging
+- `tbm-ai-bot-v2/src/scheduler` — generic scheduled task infrastructure
+- `tbm-ai-bot-v2/src/signal-engine` — future signal orchestration boundary
+- `tbm-ai-bot-v2/src/indicators` — future technical indicators
+- `tbm-ai-bot-v2/src/filters` — future signal filters
+- `tbm-ai-bot-v2/src/reports` — future report generation
+- `tbm-ai-bot-v2/src/martingale` — future position-sizing policy boundary
+- `tbm-ai-bot-v2/src/telegram` — Telegram client boundary
+- `tbm-ai-bot-v2/src/utils` — shared utilities
+- `tbm-ai-bot-v2/src/types` — shared domain contracts
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The bot is isolated in its own workspace package and does not depend on the existing web/API artifacts.
+- Environment values are loaded and validated at startup instead of being accessed throughout the application.
+- Telegram, scheduling, and logging are infrastructure boundaries so future trading modules remain independently testable.
+- Trading logic is intentionally absent; the domain folders contain extension-point contracts only.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+The first version provides the foundation for a Telegram-based trading assistant. Future work can add market data, signal generation, filtering, reporting, and risk policies without changing the application bootstrap.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Do not implement trading logic until explicitly requested.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Set `TELEGRAM_BOT_TOKEN` from a secure environment variable before starting the bot.
+- `SCHEDULER_ENABLED` defaults to `false`; scheduled jobs should be enabled deliberately when they are added.
 
 ## Pointers
 
