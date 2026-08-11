@@ -15,10 +15,24 @@ signal calculations, and order execution are intentionally not implemented.
 
 ## Setup
 
-1. Copy `.env.example` to `.env`.
+1. Copy `tbm-ai-bot-v2/.env.example` to either `tbm-ai-bot-v2/.env` or the
+   workspace-root `.env`.
 2. Set `TELEGRAM_BOT_TOKEN` from a secure environment variable.
 3. Install workspace dependencies with `pnpm install`.
 4. Run `pnpm --filter tbm-ai-bot-v2 run dev`.
+
+The configuration loader resolves `.env` relative to the project files, not
+only relative to the current shell directory. This means both of these
+locations work:
+
+```text
+workspace/.env
+workspace/tbm-ai-bot-v2/.env
+```
+
+Shell-provided variables always take precedence over values in either file.
+Do not commit `.env` files or paste bot tokens into chat, source code, or
+shell history.
 
 ## Commands
 

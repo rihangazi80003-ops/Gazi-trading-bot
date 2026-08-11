@@ -1,4 +1,34 @@
-import "dotenv/config";
+import { config as loadDotenv } from "dotenv";
+import { existsSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const configDirectory = dirname(fileURLToPath(import.meta.url));
+const packageDirectory = resolve(configDirectory, "../..");
+
+/**
+ * Load environment files without depending on the directory used to start
+ * the process. Explicit process environment variables always win.
+ *
+ * The package-local file is checked first, followed by the workspace-root
+ * file. dotenv does not override values already loaded, so this gives the
+ * package-local file precedence over the workspace-root file while retaining
+ * normal shell/environment precedence.
+ */
+function loadEnvironment(): void {
+  const environmentFiles = [
+    resolve(packageDirectory, ".env"),
+    resolve(packageDirectory, "..", ".env"),
+  ];
+
+  for (const environmentFile of environmentFiles) {
+    if (existsSync(environmentFile)) {
+      loadDotenv({ path: environmentFile });
+    }
+  }
+}
+
+loadEnvironment();
 
 export type NodeEnvironment = "development" | "test" | "production";
 

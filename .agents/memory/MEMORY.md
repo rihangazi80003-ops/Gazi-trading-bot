@@ -1,0 +1,1 @@
+- [Bot environment loading](bot-environment-loading.md) — resolve dotenv files from project paths, not the shell working directory.
