@@ -8,7 +8,10 @@
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
         .glass-card { background: rgba(17, 24, 39, 0.90); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .chart-bg { background: linear-gradient(180deg, #070913 0%, #111827 100%); }
+        .chart-bg { background: radial-gradient(circle at center, #111827 0%, #070913 100%); }
+        /* Custom Candle Glow & Border */
+        .candle-green { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+        .candle-red { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
     </style>
 </head>
 <body class="p-3 flex justify-start items-center min-h-screen flex-col">
@@ -74,13 +77,13 @@
 
     </div>
 
-    <!-- Live Chart & AI Widget (Inspired by Reference Video) -->
+    <!-- Live Chart & AI Widget (High Definition Style) -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-yellow-500/30">
         
         <!-- Widget Header Tabs -->
         <div class="flex items-center justify-between border-b border-gray-800 pb-2">
             <div class="flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span class="w-2 h-2 rounded-full bg-yellow-500 animate-ping"></span>
                 <span class="text-[11px] font-bold text-yellow-400">Finorix AI Market</span>
             </div>
             <div class="flex space-x-1 text-[9px]">
@@ -91,11 +94,11 @@
         </div>
 
         <!-- Widget Controls Info -->
-        <div class="flex items-center justify-between text-[10px] bg-black/40 p-2 rounded-lg border border-gray-800">
+        <div class="flex items-center justify-between text-[10px] bg-black/50 p-2 rounded-lg border border-gray-800">
             <div>
                 <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
                 <span id="widgetPair" class="font-bold text-white">EUR/USD (OTC)</span>
-                <span class="bg-green-600 text-white text-[8px] px-1 ml-1 rounded">LIVE</span>
+                <span class="bg-green-600 text-white text-[8px] px-1 ml-1 rounded font-bold">LIVE</span>
             </div>
             <div class="text-right">
                 <span class="text-gray-400 block text-[8px]">INVESTMENT</span>
@@ -104,32 +107,67 @@
         </div>
 
         <!-- Auto Trade Toggle Banner -->
-        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-1.5 text-center">
+        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-1.5 text-center flex items-center justify-center space-x-1">
             <span class="text-[9px] font-bold text-yellow-400 tracking-wider">⚡ AUTO TRADE OFF</span>
         </div>
 
-        <!-- Mini Live Candlestick Simulated Chart Area -->
-        <div class="chart-bg h-32 rounded-lg relative overflow-hidden flex items-end justify-between p-2 border border-gray-800">
-            <!-- Grid Lines -->
-            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-2opy-10">
-                <div class="border-b border-gray-600 w-full"></div>
-                <div class="border-b border-gray-600 w-full"></div>
-                <div class="border-b border-gray-600 w-full"></div>
+        <!-- HD Candlestick Simulated Chart Area -->
+        <div class="chart-bg h-36 rounded-lg relative overflow-hidden flex items-end justify-between px-3 py-2 border border-gray-800">
+            <!-- Background Grid Lines -->
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-15">
+                <div class="border-b border-gray-500 w-full"></div>
+                <div class="border-b border-gray-500 w-full"></div>
+                <div class="border-b border-gray-500 w-full"></div>
+                <div class="border-b border-gray-500 w-full"></div>
             </div>
 
-            <!-- Simulated Candles -->
-            <div class="w-2 bg-green-500 h-10 rounded-sm relative bottom-2"></div>
-            <div class="w-2 bg-red-500 h-14 rounded-sm relative bottom-4"></div>
-            <div class="w-2 bg-green-500 h-8 rounded-sm relative bottom-1"></div>
-            <div class="w-2 bg-green-500 h-16 rounded-sm relative bottom-6 animate-pulse"></div>
-            <div class="w-2 bg-red-500 h-10 rounded-sm relative bottom-3"></div>
-            <div class="w-2 bg-green-500 h-20 rounded-sm relative bottom-8"></div>
-            <div class="w-2 bg-red-500 h-12 rounded-sm relative bottom-5"></div>
-            <div class="w-2 bg-green-500 h-24 rounded-sm relative bottom-10 animate-bounce"></div>
+            <!-- HD Candlesticks with wicks (Shadow lines) -->
+            <!-- Candle 1 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-4 bg-green-400"></div>
+                <div class="w-3 candle-green h-8 rounded-[2px]"></div>
+                <div class="w-[1px] h-3 bg-green-400"></div>
+            </div>
+            <!-- Candle 2 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-5 bg-red-400"></div>
+                <div class="w-3 candle-red h-12 rounded-[2px]"></div>
+                <div class="w-[1px] h-4 bg-red-400"></div>
+            </div>
+            <!-- Candle 3 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-3 bg-green-400"></div>
+                <div class="w-3 candle-green h-6 rounded-[2px]"></div>
+                <div class="w-[1px] h-3 bg-green-400"></div>
+            </div>
+            <!-- Candle 4 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-6 bg-green-400"></div>
+                <div class="w-3 candle-green h-16 rounded-[2px]"></div>
+                <div class="w-[1px] h-5 bg-green-400"></div>
+            </div>
+            <!-- Candle 5 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-4 bg-red-400"></div>
+                <div class="w-3 candle-red h-10 rounded-[2px]"></div>
+                <div class="w-[1px] h-3 bg-red-400"></div>
+            </div>
+            <!-- Candle 6 -->
+            <div class="relative flex flex-col items-center">
+                <div class="w-[1px] h-3 bg-green-400"></div>
+                <div class="w-3 candle-green h-14 rounded-[2px]"></div>
+                <div class="w-[1px] h-4 bg-green-400"></div>
+            </div>
+            <!-- Candle 7 -->
+            <div class="relative flex flex-col items-center animate-pulse">
+                <div class="w-[1px] h-5 bg-green-400"></div>
+                <div class="w-3 candle-green h-20 rounded-[2px]"></div>
+                <div class="w-[1px] h-6 bg-green-400"></div>
+            </div>
 
-            <!-- Price Tag Indicator -->
-            <div class="absolute right-2 top-10 bg-yellow-500/20 border border-yellow-500 text-yellow-300 text-[8px] px-1 rounded">
-                1.11471
+            <!-- Price Tag Indicator Overlay -->
+            <div class="absolute right-2 top-8 bg-yellow-500/20 border border-yellow-500 text-yellow-300 text-[9px] font-bold px-1.5 py-0.5 rounded shadow">
+                1.11471 🟢
             </div>
         </div>
 
