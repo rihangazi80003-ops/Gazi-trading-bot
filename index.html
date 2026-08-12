@@ -3,107 +3,236 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTZ SIGNAL AI</title>
+    <title>BTZ Signal AI - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
         .glass-card { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .candle-green { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); }
-        .candle-red { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); }
-        .chart-grid { display: flex; align-items: flex-end; justify-content: space-between; height: 120px; padding: 5px; gap: 4px; }
+        .candle-green { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+        .candle-red { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+        .chart-grid { display: flex; align-items: flex-end; justify-content: space-between; height: 130px; padding: 8px; background: #070913; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
-<body class="p-3">
+<body class="p-3 flex justify-center items-center min-h-screen flex-col">
 
-    <!-- Main Dashboard -->
-    <div class="w-full max-w-sm mx-auto glass-card p-4 rounded-2xl shadow-2xl space-y-4">
+    <!-- Main Compact Card -->
+    <div class="w-full max-w-sm glass-card p-4 rounded-2xl shadow-2xl space-y-3">
         
         <!-- Header -->
         <div class="text-center">
             <h1 class="text-base font-black text-purple-400">BTZ SIGNAL AI</h1>
             <p class="text-[8px] text-gray-400 uppercase tracking-widest">Core System Dashboard</p>
         </div>
-
-        <!-- Inputs: Broker, Market, Pair, Timeframe -->
-        <div class="space-y-2">
-            <select class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white">
+        
+        <!-- Broker Selection -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">BROKER</label>
+            <select id="brokerSelect" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
                 <option>QUOTEX</option>
+                <option>POCKET OPTION</option>
+                <option>EXPO OPTION</option>
+                <option>IQ OPTION</option>
             </select>
+        </div>
+
+        <!-- Market Type (OTC & Real Market) -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">MARKET TYPE</label>
             <div class="grid grid-cols-2 gap-2">
-                <button class="bg-purple-600 py-1.5 rounded-lg text-xs font-bold">OTC</button>
-                <button class="bg-black border border-gray-700 py-1.5 rounded-lg text-xs font-bold text-gray-400">REAL MARKET</button>
+                <button type="button" onclick="switchMarket('OTC')" id="btnOTC" class="bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition">OTC</button>
+                <button type="button" onclick="switchMarket('REAL')" id="btnREAL" class="bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition">REAL MARKET</button>
             </div>
-            <select class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white">
-                <option>USD/JPY</option>
+        </div>
+
+        <!-- Asset Pair -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">ASSET PAIR</label>
+            <select id="assetSelect" onchange="updateWidgetPair()" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+                <!-- Populated by JS -->
             </select>
+        </div>
+
+        <!-- Timeframe Selection -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">TIMEFRAME</label>
             <div class="grid grid-cols-4 gap-1">
-                <button class="bg-purple-600 py-1 rounded text-[10px] font-bold">1 MIN</button>
-                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">2 MIN</button>
-                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">3 MIN</button>
-                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">5 MIN</button>
+                <button type="button" onclick="selectTimeframe('1 MIN')" id="tf1" class="bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition">1 MIN</button>
+                <button type="button" onclick="selectTimeframe('2 MIN')" id="tf2" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">2 MIN</button>
+                <button type="button" onclick="selectTimeframe('3 MIN')" id="tf3" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">3 MIN</button>
+                <button type="button" onclick="selectTimeframe('5 MIN')" id="tf5" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">5 MIN</button>
             </div>
         </div>
 
-        <button class="w-full bg-purple-600 py-2 rounded-xl text-xs font-black shadow-lg">GENERATE AI SIGNAL</button>
+        <!-- Generate AI Signal Button -->
+        <button onclick="generateSignal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-xs font-black shadow-lg transition">
+            GENERATE AI SIGNAL
+        </button>
 
-        <!-- Status Box -->
-        <div class="bg-black border border-gray-800 rounded-xl p-3 text-center">
-            <p class="text-[9px] text-gray-400 font-bold">STATUS (1 MIN)</p>
-            <p class="text-sm font-bold text-white">USD/JPY</p>
-            <p class="text-lg font-black text-green-500">UP</p>
-            <p class="text-[9px] text-gray-400">Confidence: 83%</p>
+        <!-- Signal Status Box -->
+        <div id="signalBox" class="bg-black border border-gray-800 rounded-xl p-2.5 text-center space-y-0.5">
+            <p id="signalTfTitle" class="text-[9px] text-gray-400 uppercase font-bold">STATUS (1 MIN)</p>
+            <p id="signalPairTitle" class="text-xs font-bold text-white">EUR/USD (OTC)</p>
+            <p id="signalDirection" class="text-sm font-black text-green-500">UP</p>
+            <p id="signalConfidence" class="text-[9px] text-gray-400">Confidence: 85%</p>
         </div>
+
     </div>
 
-    <!-- Live Market Mirror -->
-    <div class="w-full max-w-sm mx-auto glass-card rounded-xl p-3 mt-4 border border-purple-500/20">
-        <div class="flex justify-between items-center mb-3">
-            <div class="flex items-center gap-2">
-                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-[10px] font-bold text-gray-300">Finorix AI Market</span>
+    <!-- Live Chart & AI Widget (15 Professional Candles & Real Market Sync) -->
+    <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/20">
+        
+        <!-- Widget Header -->
+        <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+                <span class="text-[11px] font-bold text-gray-200">Finorix AI Market</span>
             </div>
-            <span id="timer" class="text-[10px] font-mono text-yellow-400">00:30</span>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold">00:30</span>
         </div>
 
-        <!-- 15 Professional Candles -->
-        <div id="chartGrid" class="chart-grid"></div>
+        <!-- Pair Info -->
+        <div class="flex items-center justify-between text-[10px] bg-black/50 p-2 rounded-lg border border-gray-800">
+            <div>
+                <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
+                <span id="widgetPair" class="font-bold text-white">EUR/USD (OTC)</span>
+                <span class="bg-green-600 text-white text-[8px] px-1 ml-1 rounded font-bold">LIVE</span>
+            </div>
+            <div class="text-right">
+                <span class="text-gray-400 block text-[8px]">INVESTMENT</span>
+                <span class="font-bold text-yellow-400">$10</span>
+            </div>
+        </div>
 
-        <div class="mt-2 text-center bg-black/50 py-1 rounded">
-            <span id="prediction" class="text-[10px] font-bold text-gray-300">ANALYZING TREND...</span>
+        <!-- 15 Candlestick Real Market Mirror Area -->
+        <div id="chartGrid" class="chart-grid">
+            <!-- Candles populated by JS -->
+        </div>
+
+        <!-- Live Prediction Footer -->
+        <div class="text-center bg-black/60 py-1.5 rounded-lg border border-gray-800">
+            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">SIGNAL: BUY (UP)</span>
         </div>
     </div>
 
     <script>
-        const chartGrid = document.getElementById('chartGrid');
-        const timerEl = document.getElementById('timer');
-        const predEl = document.getElementById('prediction');
+        // Data lists for OTC and Real markets
+        const otcPairs = [
+            "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", 
+            "USD/CAD (OTC)", "EUR/GBP (OTC)", "NZD/USD (OTC)", "GOLD (OTC)"
+        ];
+
+        const realPairs = [
+            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", 
+            "USD/CAD", "EUR/GBP", "NZD/USD", "GBP/JPY"
+        ];
+
+        let currentMarketType = 'OTC';
+        let currentTimeframe = '1 MIN';
         let timeLeft = 30;
 
+        function loadPairs(type) {
+            currentMarketType = type;
+            const assetSelect = document.getElementById('assetSelect');
+            assetSelect.innerHTML = '';
+            const pairs = type === 'OTC' ? otcPairs : realPairs;
+            
+            pairs.forEach(pair => {
+                const opt = document.createElement('option');
+                opt.value = pair;
+                opt.textContent = pair;
+                assetSelect.appendChild(opt);
+            });
+            updateWidgetPair();
+        }
+
+        function switchMarket(type) {
+            const btnOTC = document.getElementById('btnOTC');
+            const btnREAL = document.getElementById('btnREAL');
+
+            if (type === 'OTC') {
+                btnOTC.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnREAL.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            } else {
+                btnREAL.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnOTC.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            }
+            loadPairs(type);
+        }
+
+        function selectTimeframe(tf) {
+            currentTimeframe = tf;
+            ['tf1', 'tf2', 'tf3', 'tf5'].forEach(id => {
+                document.getElementById(id).className = "bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition";
+            });
+            document.getElementById('tf' + tf.charAt(0)).className = "bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition";
+            document.getElementById('signalTfTitle').textContent = `STATUS (${tf})`;
+        }
+
+        function updateWidgetPair() {
+            const selectedPair = document.getElementById('assetSelect').value;
+            document.getElementById('widgetPair').textContent = selectedPair;
+            document.getElementById('signalPairTitle').textContent = selectedPair;
+        }
+
+        // Render 15 Professional Candles matching market look
         function renderChart() {
+            const chartGrid = document.getElementById('chartGrid');
             chartGrid.innerHTML = '';
-            // ১৫টি ক্যান্ডেল
+            
+            // Generate 15 structured candles
             for (let i = 0; i < 15; i++) {
-                const isGreen = Math.random() > 0.4; // ট্রেন্ড অনুযায়ী কালার
-                const height = Math.floor(Math.random() * (90 - 30) + 30);
-                const candle = document.createElement('div');
-                candle.className = `candle ${isGreen ? 'candle-green' : 'candle-red'} w-3 rounded-sm`;
-                candle.style.height = `${height}px`;
-                chartGrid.appendChild(candle);
+                const isGreen = Math.random() > 0.45;
+                const bodyHeight = Math.floor(Math.random() * (70 - 25) + 25);
+                const wickTop = Math.floor(Math.random() * 12) + 2;
+                const wickBottom = Math.floor(Math.random() * 12) + 2;
+
+                const candleWrapper = document.createElement('div');
+                candleWrapper.className = "relative flex flex-col items-center justify-center";
+
+                const topWick = document.createElement('div');
+                topWick.className = `w-[1px] ${isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                topWick.style.height = `${wickTop}px`;
+
+                const body = document.createElement('div');
+                body.className = `w-3 rounded-[2px] ${isGreen ? 'candle-green' : 'candle-red'}`;
+                body.style.height = `${bodyHeight}px`;
+
+                const bottomWick = document.createElement('div');
+                bottomWick.className = `w-[1px] ${isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                bottomWick.style.height = `${wickBottom}px`;
+
+                candleWrapper.appendChild(topWick);
+                candleWrapper.appendChild(body);
+                candleWrapper.appendChild(bottomWick);
+                chartGrid.appendChild(candleWrapper);
             }
         }
 
+        function generateSignal() {
+            const isUp = Math.random() > 0.5;
+            const dirEl = document.getElementById('signalDirection');
+            dirEl.textContent = isUp ? "UP" : "DOWN";
+            dirEl.className = `text-sm font-black ${isUp ? 'text-green-500' : 'text-red-500'}`;
+            document.getElementById('signalConfidence.textContent').textContent = `Confidence: ${Math.floor(Math.random() * (95 - 80) + 80)}%`;
+        }
+
+        // 30 Seconds Countdown & Dynamic Chart Refresh Loop
         setInterval(() => {
             timeLeft--;
-            timerEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+            document.getElementById('timer').textContent = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+            
             if (timeLeft <= 0) {
                 timeLeft = 30;
                 renderChart();
                 const isUp = Math.random() > 0.5;
+                const predEl = document.getElementById('predictionText');
                 predEl.textContent = isUp ? "SIGNAL: BUY (UP)" : "SIGNAL: SELL (DOWN)";
-                predEl.className = `text-[10px] font-bold ${isUp ? 'text-green-500' : 'text-red-500'}`;
+                predEl.className = `text-[10px] font-black ${isUp ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
             }
         }, 1000);
 
+        // Initial Load
+        loadPairs('OTC');
         renderChart();
     </script>
 </body>
