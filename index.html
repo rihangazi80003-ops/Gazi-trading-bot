@@ -7,13 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
-        .glass-card { background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-card { background: rgba(17, 24, 39, 0.90); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .chart-bg { background: linear-gradient(180deg, #070913 0%, #111827 100%); }
     </style>
 </head>
 <body class="p-3 flex justify-start items-center min-h-screen flex-col">
 
     <!-- Main Compact Card -->
-    <div class="w-full max-w-sm glass-card p-4 rounded-2xl shadow-2xl space-y-3 mt-2">
+    <div class="w-full max-w-sm glass-card p-4 rounded-2xl shadow-2xl space-y-3 mt-1">
         
         <!-- Header -->
         <div class="text-center">
@@ -42,7 +43,7 @@
         <!-- Asset Pair -->
         <div class="space-y-0.5">
             <label class="text-[9px] text-gray-400 font-bold block">ASSET PAIR</label>
-            <select id="assetSelect" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+            <select id="assetSelect" onchange="updateLiveWidgetPair()" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
                 <!-- Dynamically populated pairs -->
             </select>
         </div>
@@ -73,9 +74,70 @@
 
     </div>
 
-    <!-- Reserved Space for Next Live Signals Section -->
-    <div id="liveSignalsContainer" class="w-full max-w-sm mt-3 space-y-2">
-        <!-- এখানে পরবর্তীতে আমাদের লাইভ সিগন্যাল টিকার বা হিস্ট্রি বসবে -->
+    <!-- Live Chart & AI Widget (Inspired by Reference Video) -->
+    <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-yellow-500/30">
+        
+        <!-- Widget Header Tabs -->
+        <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                <span class="text-[11px] font-bold text-yellow-400">Finorix AI Market</span>
+            </div>
+            <div class="flex space-x-1 text-[9px]">
+                <span class="bg-purple-900/60 text-purple-300 px-1.5 py-0.5 rounded font-bold">Activated</span>
+                <span class="text-gray-500 px-1.5 py-0.5">Stopped</span>
+                <span class="text-gray-500 px-1.5 py-0.5">Featured</span>
+            </div>
+        </div>
+
+        <!-- Widget Controls Info -->
+        <div class="flex items-center justify-between text-[10px] bg-black/40 p-2 rounded-lg border border-gray-800">
+            <div>
+                <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
+                <span id="widgetPair" class="font-bold text-white">EUR/USD (OTC)</span>
+                <span class="bg-green-600 text-white text-[8px] px-1 ml-1 rounded">LIVE</span>
+            </div>
+            <div class="text-right">
+                <span class="text-gray-400 block text-[8px]">INVESTMENT</span>
+                <span class="font-bold text-yellow-400">$10</span>
+            </div>
+        </div>
+
+        <!-- Auto Trade Toggle Banner -->
+        <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-1.5 text-center">
+            <span class="text-[9px] font-bold text-yellow-400 tracking-wider">⚡ AUTO TRADE OFF</span>
+        </div>
+
+        <!-- Mini Live Candlestick Simulated Chart Area -->
+        <div class="chart-bg h-32 rounded-lg relative overflow-hidden flex items-end justify-between p-2 border border-gray-800">
+            <!-- Grid Lines -->
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-2opy-10">
+                <div class="border-b border-gray-600 w-full"></div>
+                <div class="border-b border-gray-600 w-full"></div>
+                <div class="border-b border-gray-600 w-full"></div>
+            </div>
+
+            <!-- Simulated Candles -->
+            <div class="w-2 bg-green-500 h-10 rounded-sm relative bottom-2"></div>
+            <div class="w-2 bg-red-500 h-14 rounded-sm relative bottom-4"></div>
+            <div class="w-2 bg-green-500 h-8 rounded-sm relative bottom-1"></div>
+            <div class="w-2 bg-green-500 h-16 rounded-sm relative bottom-6 animate-pulse"></div>
+            <div class="w-2 bg-red-500 h-10 rounded-sm relative bottom-3"></div>
+            <div class="w-2 bg-green-500 h-20 rounded-sm relative bottom-8"></div>
+            <div class="w-2 bg-red-500 h-12 rounded-sm relative bottom-5"></div>
+            <div class="w-2 bg-green-500 h-24 rounded-sm relative bottom-10 animate-bounce"></div>
+
+            <!-- Price Tag Indicator -->
+            <div class="absolute right-2 top-10 bg-yellow-500/20 border border-yellow-500 text-yellow-300 text-[8px] px-1 rounded">
+                1.11471
+            </div>
+        </div>
+
+        <!-- Footer watermark -->
+        <div class="flex justify-between items-center text-[8px] text-gray-500 pt-1">
+            <span>PINCH TO RESIZE</span>
+            <span>TG: @codeinbound7</span>
+        </div>
     </div>
 
     <script>
@@ -103,6 +165,7 @@
                 opt.textContent = pair;
                 assetSelect.appendChild(opt);
             });
+            updateLiveWidgetPair();
         }
 
         function switchMarket(type) {
@@ -127,6 +190,11 @@
             });
             const activeId = 'tf' + tf.charAt(0);
             document.getElementById(activeId).className = "bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition";
+        }
+
+        function updateLiveWidgetPair() {
+            const selectedPair = document.getElementById('assetSelect').value;
+            document.getElementById('widgetPair').textContent = selectedPair;
         }
 
         function generateSignal() {
