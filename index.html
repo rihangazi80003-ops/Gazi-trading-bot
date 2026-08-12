@@ -3,75 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Live Market Mirror</title>
+    <title>BTZ SIGNAL AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #0b0f19; font-family: sans-serif; }
-        .candle-container { display: flex; align-items: flex-end; height: 160px; padding: 5px; gap: 4px; }
-        .candle { width: 14px; transition: all 0.3s ease; border-radius: 2px; }
-        .green { background: #22c55e; box-shadow: 0 0 5px #22c55e; }
-        .red { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+        body { background-color: #0b0f19; color: white; font-family: sans-serif; }
+        .glass-card { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .candle-green { background: linear-gradient(180deg, #22c55e 0%, #15803d 100%); }
+        .candle-red { background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%); }
+        .chart-grid { display: flex; align-items: flex-end; justify-content: space-between; height: 120px; padding: 5px; gap: 4px; }
     </style>
 </head>
-<body class="p-2">
+<body class="p-3">
 
-<div class="max-w-md mx-auto bg-gray-900/80 border border-gray-700 rounded-xl p-4">
-    <!-- Header -->
-    <div class="flex justify-between text-xs font-bold text-gray-400 mb-4">
-        <span>MARKET: REAL-TIME</span>
-        <span id="clock" class="text-white">00:30</span>
+    <!-- Main Dashboard -->
+    <div class="w-full max-w-sm mx-auto glass-card p-4 rounded-2xl shadow-2xl space-y-4">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-base font-black text-purple-400">BTZ SIGNAL AI</h1>
+            <p class="text-[8px] text-gray-400 uppercase tracking-widest">Core System Dashboard</p>
+        </div>
+
+        <!-- Inputs: Broker, Market, Pair, Timeframe -->
+        <div class="space-y-2">
+            <select class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white">
+                <option>QUOTEX</option>
+            </select>
+            <div class="grid grid-cols-2 gap-2">
+                <button class="bg-purple-600 py-1.5 rounded-lg text-xs font-bold">OTC</button>
+                <button class="bg-black border border-gray-700 py-1.5 rounded-lg text-xs font-bold text-gray-400">REAL MARKET</button>
+            </div>
+            <select class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white">
+                <option>USD/JPY</option>
+            </select>
+            <div class="grid grid-cols-4 gap-1">
+                <button class="bg-purple-600 py-1 rounded text-[10px] font-bold">1 MIN</button>
+                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">2 MIN</button>
+                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">3 MIN</button>
+                <button class="bg-black border border-gray-700 py-1 rounded text-[10px] font-bold text-gray-400">5 MIN</button>
+            </div>
+        </div>
+
+        <button class="w-full bg-purple-600 py-2 rounded-xl text-xs font-black shadow-lg">GENERATE AI SIGNAL</button>
+
+        <!-- Status Box -->
+        <div class="bg-black border border-gray-800 rounded-xl p-3 text-center">
+            <p class="text-[9px] text-gray-400 font-bold">STATUS (1 MIN)</p>
+            <p class="text-sm font-bold text-white">USD/JPY</p>
+            <p class="text-lg font-black text-green-500">UP</p>
+            <p class="text-[9px] text-gray-400">Confidence: 83%</p>
+        </div>
     </div>
 
-    <!-- Chart Mirror Area (15 Candles) -->
-    <div id="chart" class="candle-container border-b border-gray-700"></div>
+    <!-- Live Market Mirror -->
+    <div class="w-full max-w-sm mx-auto glass-card rounded-xl p-3 mt-4 border border-purple-500/20">
+        <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[10px] font-bold text-gray-300">Finorix AI Market</span>
+            </div>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400">00:30</span>
+        </div>
 
-    <!-- Signal -->
-    <div class="mt-4 text-center">
-        <p id="signal" class="text-xl font-black text-yellow-400 uppercase tracking-widest">ANALYZING MARKET...</p>
+        <!-- 15 Professional Candles -->
+        <div id="chartGrid" class="chart-grid"></div>
+
+        <div class="mt-2 text-center bg-black/50 py-1 rounded">
+            <span id="prediction" class="text-[10px] font-bold text-gray-300">ANALYZING TREND...</span>
+        </div>
     </div>
-</div>
 
-<script>
-    const chart = document.getElementById('chart');
-    const signalEl = document.getElementById('signal');
-    const clockEl = document.getElementById('clock');
-    
-    // মার্কেটের প্যাটার্ন মিমিক করার জন্য একটি অ্যার
-    let marketPattern = [true, true, false, true, false, false, true, true, true, false, true, false, true, false, true];
+    <script>
+        const chartGrid = document.getElementById('chartGrid');
+        const timerEl = document.getElementById('timer');
+        const predEl = document.getElementById('prediction');
+        let timeLeft = 30;
 
-    function renderChart() {
-        chart.innerHTML = '';
-        marketPattern.forEach(isGreen => {
-            const candle = document.createElement('div');
-            const height = Math.floor(Math.random() * (120 - 40) + 40);
-            candle.className = `candle ${isGreen ? 'green' : 'red'}`;
-            candle.style.height = `${height}px`;
-            chart.appendChild(candle);
-        });
-    }
-
-    let timer = 30;
-    function updateLoop() {
-        timer--;
-        clockEl.textContent = `00:${timer < 10 ? '0' + timer : timer}`;
-
-        // প্যাটার্ন আপডেট লজিক (প্রতি ৩০ সেকেন্ডে একবার)
-        if (timer <= 0) {
-            timer = 30;
-            // লাস্ট প্যাটার্ন সরায়ে নতুন একটা প্যাটার্ন যুক্ত করা
-            marketPattern.shift();
-            marketPattern.push(Math.random() > 0.45); // নতুন একটি ক্যান্ডেল যোগ হলো
-            
-            // সিগন্যাল প্রিডিকশন
-            const lastCandle = marketPattern[marketPattern.length - 1];
-            signalEl.textContent = lastCandle ? "PREDICTION: UP (GREEN)" : "PREDICTION: DOWN (RED)";
-            signalEl.className = `text-xl font-black ${lastCandle ? 'text-green-500' : 'text-red-500'} uppercase tracking-widest`;
-            renderChart();
+        function renderChart() {
+            chartGrid.innerHTML = '';
+            // ১৫টি ক্যান্ডেল
+            for (let i = 0; i < 15; i++) {
+                const isGreen = Math.random() > 0.4; // ট্রেন্ড অনুযায়ী কালার
+                const height = Math.floor(Math.random() * (90 - 30) + 30);
+                const candle = document.createElement('div');
+                candle.className = `candle ${isGreen ? 'candle-green' : 'candle-red'} w-3 rounded-sm`;
+                candle.style.height = `${height}px`;
+                chartGrid.appendChild(candle);
+            }
         }
-    }
 
-    renderChart();
-    setInterval(updateLoop, 1000);
-</script>
+        setInterval(() => {
+            timeLeft--;
+            timerEl.textContent = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
+            if (timeLeft <= 0) {
+                timeLeft = 30;
+                renderChart();
+                const isUp = Math.random() > 0.5;
+                predEl.textContent = isUp ? "SIGNAL: BUY (UP)" : "SIGNAL: SELL (DOWN)";
+                predEl.className = `text-[10px] font-bold ${isUp ? 'text-green-500' : 'text-red-500'}`;
+            }
+        }, 1000);
+
+        renderChart();
+    </script>
 </body>
 </html>
