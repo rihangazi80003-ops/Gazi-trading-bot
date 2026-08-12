@@ -1,2 +1,0 @@
-- [Bot environment loading](bot-environment-loading.md) — resolve dotenv files from project paths, not the shell working directory.
-- [Browser widget in Node package](browser-widget-node-boundary.md) — DOM typings can compile in a Node package, but browser globals must be guarded at runtime.
