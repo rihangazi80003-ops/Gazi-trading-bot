@@ -1,5 +1,0 @@
-{
-  "routes": [
-    { "src": "/(.*)", "dest": "/tbm-ai-bot-v2/index.html" }
-  ]
-}
