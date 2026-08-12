@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTZ Signal AI - Pro</title>
+    <title>BTZ Signal AI - Pro (30s Advance)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
@@ -35,7 +35,7 @@
             </select>
         </div>
 
-        <!-- Market Type (OTC & Real Market) -->
+        <!-- Market Type -->
         <div class="space-y-0.5">
             <label class="text-[9px] text-gray-400 font-bold block">MARKET TYPE</label>
             <div class="grid grid-cols-2 gap-2">
@@ -48,11 +48,10 @@
         <div class="space-y-0.5">
             <label class="text-[9px] text-gray-400 font-bold block">ASSET PAIR</label>
             <select id="assetSelect" onchange="updateWidgetPair()" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
-                <!-- Populated by JS -->
             </select>
         </div>
 
-        <!-- Timeframe Selection -->
+        <!-- Timeframe -->
         <div class="space-y-0.5">
             <label class="text-[9px] text-gray-400 font-bold block">TIMEFRAME</label>
             <div class="grid grid-cols-4 gap-1">
@@ -63,7 +62,6 @@
             </div>
         </div>
 
-        <!-- Generate AI Signal Button -->
         <button onclick="generateSignal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-xs font-black shadow-lg transition">
             GENERATE AI SIGNAL
         </button>
@@ -73,24 +71,23 @@
             <p id="signalTfTitle" class="text-[9px] text-gray-400 uppercase font-bold">STATUS (1 MIN)</p>
             <p id="signalPairTitle" class="text-xs font-bold text-white">EUR/USD (OTC)</p>
             <p id="signalDirection" class="text-sm font-black text-green-500">UP</p>
-            <p id="signalConfidence" class="text-[9px] text-gray-400">Confidence: 85%</p>
+            <p id="signalConfidence" class="text-[9px] text-gray-400">Confidence: 88%</p>
         </div>
 
     </div>
 
-    <!-- Live Chart & AI Widget (15 Professional Candles & Real Market Sync) -->
+    <!-- Live Chart & AI Widget (1-Minute Candle with 30s Advance Pre-view) -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/20">
         
-        <!-- Widget Header -->
         <div class="flex items-center justify-between border-b border-gray-800 pb-2">
             <div class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
                 <span class="text-[11px] font-bold text-gray-200">Finorix AI Market</span>
             </div>
-            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold">00:30</span>
+            <!-- ১ মিনিটের কাউন্টডাউন (৬০ থেকে শুরু হবে) -->
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold">01:00</span>
         </div>
 
-        <!-- Pair Info -->
         <div class="flex items-center justify-between text-[10px] bg-black/50 p-2 rounded-lg border border-gray-800">
             <div>
                 <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
@@ -103,39 +100,29 @@
             </div>
         </div>
 
-        <!-- 15 Candlestick Real Market Mirror Area -->
-        <div id="chartGrid" class="chart-grid">
-            <!-- Candles populated by JS -->
-        </div>
+        <!-- 15 Candlestick Chart -->
+        <div id="chartGrid" class="chart-grid"></div>
 
-        <!-- Live Prediction Footer -->
         <div class="text-center bg-black/60 py-1.5 rounded-lg border border-gray-800">
-            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">SIGNAL: BUY (UP)</span>
+            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE (0-30s)...</span>
         </div>
     </div>
 
     <script>
-        // Data lists for OTC and Real markets
-        const otcPairs = [
-            "EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", 
-            "USD/CAD (OTC)", "EUR/GBP (OTC)", "NZD/USD (OTC)", "GOLD (OTC)"
-        ];
-
-        const realPairs = [
-            "EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", 
-            "USD/CAD", "EUR/GBP", "NZD/USD", "GBP/JPY"
-        ];
+        const otcPairs = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "USD/CAD (OTC)", "EUR/GBP (OTC)", "NZD/USD (OTC)", "GOLD (OTC)"];
+        const realPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "GBP/JPY"];
 
         let currentMarketType = 'OTC';
         let currentTimeframe = '1 MIN';
-        let timeLeft = 30;
+        let totalSeconds = 60; // ১ মিনিট = ৬০ সেকেন্ড
+        
+        let nextCandleIsUp = true; 
 
         function loadPairs(type) {
             currentMarketType = type;
             const assetSelect = document.getElementById('assetSelect');
             assetSelect.innerHTML = '';
             const pairs = type === 'OTC' ? otcPairs : realPairs;
-            
             pairs.forEach(pair => {
                 const opt = document.createElement('option');
                 opt.value = pair;
@@ -148,7 +135,6 @@
         function switchMarket(type) {
             const btnOTC = document.getElementById('btnOTC');
             const btnREAL = document.getElementById('btnREAL');
-
             if (type === 'OTC') {
                 btnOTC.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
                 btnREAL.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
@@ -174,14 +160,20 @@
             document.getElementById('signalPairTitle').textContent = selectedPair;
         }
 
-        // Render 15 Professional Candles matching market look
-        function renderChart() {
+        // ক্যান্ডেল চার্ট রেন্ডার (এখানে শেষ ক্যান্ডেলটি ৩০ সেকেন্ডের নিচে আসলে এডভান্সড কালার দেখাবে)
+        function renderChart(showAdvance, upDirection) {
             const chartGrid = document.getElementById('chartGrid');
             chartGrid.innerHTML = '';
             
-            // Generate 15 structured candles
             for (let i = 0; i < 15; i++) {
-                const isGreen = Math.random() > 0.45;
+                let isGreen;
+                // যদি এটি ১৫ নাম্বার ক্যান্ডেল হয় এবং সময় ৩০ সেকেন্ড বা তার কম হয়, তবে এডভান্সড প্রিডিকশন কালার দেখাবে
+                if (i === 14 && showAdvance) {
+                    isGreen = upDirection;
+                } else {
+                    isGreen = Math.random() > 0.45;
+                }
+
                 const bodyHeight = Math.floor(Math.random() * (70 - 25) + 25);
                 const wickTop = Math.floor(Math.random() * 12) + 2;
                 const wickBottom = Math.floor(Math.random() * 12) + 2;
@@ -213,27 +205,44 @@
             const dirEl = document.getElementById('signalDirection');
             dirEl.textContent = isUp ? "UP" : "DOWN";
             dirEl.className = `text-sm font-black ${isUp ? 'text-green-500' : 'text-red-500'}`;
-            document.getElementById('signalConfidence.textContent').textContent = `Confidence: ${Math.floor(Math.random() * (95 - 80) + 80)}%`;
         }
 
-        // 30 Seconds Countdown & Dynamic Chart Refresh Loop
+        // ১ মিনিটের মূল লুপ এবং ৩০ সেকেন্ড এডভান্স ট্রিগার
         setInterval(() => {
-            timeLeft--;
-            document.getElementById('timer').textContent = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+            totalSeconds--;
             
-            if (timeLeft <= 0) {
-                timeLeft = 30;
-                renderChart();
-                const isUp = Math.random() > 0.5;
-                const predEl = document.getElementById('predictionText');
-                predEl.textContent = isUp ? "SIGNAL: BUY (UP)" : "SIGNAL: SELL (DOWN)";
-                predEl.className = `text-[10px] font-black ${isUp ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
+            let mins = Math.floor(totalSeconds / 60);
+            let secs = totalSeconds % 60;
+            document.getElementById('timer').textContent = `0${mins}:${secs < 10 ? '0' + secs : secs}`;
+            
+            const predEl = document.getElementById('predictionText');
+
+            // যখন ৬০ থেকে ৩০ সেকেন্ড চলছে (প্রথম ৩০ সেকেন্ড)
+            if (totalSeconds > 30) {
+                predEl.textContent = "RUNNING CANDLE: ANALYZING...";
+                predEl.className = "text-[10px] font-black text-gray-400 uppercase tracking-wider";
+                renderChart(false, nextCandleIsUp);
+            } 
+            // ঠিক যখন ৩০ সেকেন্ড বা তার নিচে চলে আসবে (শেষ ৩০ সেকেন্ড বাকী), তখন এডভান্স সিগন্যাল ও ক্যান্ডেল কালার শো করবে
+            else if (totalSeconds <= 30 && totalSeconds > 0) {
+                predEl.textContent = nextCandleIsUp ? "30S ADVANCE: NEXT UP (GREEN)" : "30S ADVANCE: NEXT DOWN (RED)";
+                predEl.className = `text-[10px] font-black ${nextCandleIsUp ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
+                
+                // চার্টে ৩০ সেকেন্ড আগেই পরবর্তী ক্যান্ডেলের প্রিডিকশন কালার লক হয়ে যাবে
+                renderChart(true, nextCandleIsUp);
+            }
+
+            // ১ মিনিট শেষ হলে নতুন ক্যান্ডেলের জন্য সাইকেল রিসেট হবে
+            if (totalSeconds <= 0) {
+                totalSeconds = 60;
+                nextCandleIsUp = Math.random() > 0.5; // নতুন ক্যান্ডেলের দিক নির্ধারিত হলো
             }
         }, 1000);
 
         // Initial Load
         loadPairs('OTC');
-        renderChart();
+        nextCandleIsUp = Math.random() > 0.5;
+        renderChart(false, nextCandleIsUp);
     </script>
 </body>
 </html>
