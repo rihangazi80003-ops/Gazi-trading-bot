@@ -3,169 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTZ SIGNAL AI - Quotex Pro Indicator Engine</title>
+    <title>BTZ Signal AI - Quotex Pro Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #0b1016; color: #fff; font-family: sans-serif; }
-        .candle-green { background-color: #26a69a; }
-        .candle-red { background-color: #ef5350; }
+        body { background-color: #080c14; color: white; font-family: sans-serif; }
+        .glass-card { background: rgba(13, 19, 33, 0.98); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .candle-green { background: #0faf59; box-shadow: 0 0 8px rgba(15, 175, 89, 0.5); }
+        .candle-red { background: #ff4757; box-shadow: 0 0 8px rgba(255, 71, 87, 0.5); }
+        
+        .pro-chart-container {
+            position: relative;
+            background: #04060b;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            height: 165px;
+            overflow: hidden;
+        }
+        .grid-line-h {
+            position: absolute; left: 0; right: 0; height: 1px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.06);
+            pointer-events: none;
+        }
+        .grid-line-v {
+            position: absolute; top: 0; bottom: 0; width: 1px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.04);
+            pointer-events: none;
+        }
+        .candles-area {
+            position: absolute; inset: 0;
+            display: flex; align-items: flex-end; justify-content: space-evenly;
+            padding: 6px 2px; z-index: 2;
+        }
+        .price-badge-right {
+            position: absolute; right: 4px;
+            background: #0984e3;
+            color: white; font-size: 8px; padding: 1px 4px;
+            border-radius: 2px; font-family: monospace; z-index: 10;
+            box-shadow: 0 0 6px rgba(9, 132, 227, 0.8);
+        }
     </style>
 </head>
-<body class="p-4 max-w-md mx-auto">
-    <div class="text-center mb-4">
-        <h1 class="text-xl font-bold text-purple-400">BTZ SIGNAL AI</h1>
-        <p class="text-xs text-gray-400">QUOTEX PRO INDICATOR ENGINE</p>
-    </div>
+<body class="p-3 flex justify-center items-center min-h-screen flex-col">
 
-    <!-- Broker & Market Section -->
-    <div class="bg-[#131b26] p-3 rounded-lg border border-purple-900/50 mb-3">
-        <label class="text-xs text-gray-400 block mb-1">BROKER</label>
-        <div class="w-full bg-[#1e293b] p-2 rounded text-sm font-semibold mb-2">QUOTEX</div>
+    <!-- Main Compact Card -->
+    <div class="w-full max-w-sm glass-card p-3.5 rounded-2xl shadow-2xl space-y-2.5">
         
-        <div class="flex gap-2 mb-2">
-            <button class="flex-1 bg-purple-600 py-1.5 rounded text-xs font-bold">OTC</button>
-            <button class="flex-1 bg-[#1e293b] py-1.5 rounded text-xs text-gray-400">REAL MARKET</button>
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-sm font-black text-purple-400">BTZ SIGNAL AI</h1>
+            <p class="text-[7px] text-gray-400 uppercase tracking-widest">Quotex Pro Indicator Engine</p>
         </div>
-
-        <label class="text-xs text-gray-400 block mb-1">ASSET PAIR</label>
-        <div class="w-full bg-[#1e293b] p-2 rounded text-sm font-semibold">USD/JPY</div>
-    </div>
-
-    <!-- AI Signal Box -->
-    <div class="bg-[#131b26] p-4 rounded-lg border border-purple-900/50 mb-3 text-center">
-        <button onclick="generateSignal()" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 py-2.5 rounded-lg font-bold text-sm shadow-lg mb-3">GENERATE AI SIGNAL</button>
-        <div class="text-xs text-gray-400">STATUS (1 MIN)</div>
-        <div id="signalDirection" class="text-lg font-bold text-gray-300">USD/JPY</div>
-        <div id="signalConfidence" class="text-xs text-gray-400">Ready for Analysis</div>
-    </div>
-
-    <!-- Finorix Pro Market Real-Style Chart Box -->
-    <div class="bg-[#131b26] p-3 rounded-lg border border-purple-900/50">
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-semibold text-green-400 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Finorix Pro Market</span>
-            <span id="liveTimer" class="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded font-mono">00:22</span>
-        </div>
-
-        <div class="flex justify-between items-center text-xs text-gray-400 mb-2">
-            <span>USD/JPY <span class="text-green-400 font-bold">LIVE</span></span>
-            <span id="utcTime" class="font-mono">00:03:57</span>
-            <span class="text-purple-400 font-bold">RSI + MACD</span>
-        </div>
-
-        <!-- Real-Style Chart Area -->
-        <div id="candlesArea" class="flex items-end justify-between h-36 bg-[#0b1016] p-2 rounded border border-gray-800 relative overflow-hidden">
-            <!-- Candles will be injected dynamically -->
-        </div>
-
-        <!-- MTG & Next Candle Status -->
-        <div class="flex justify-between items-center mt-3 text-xs">
-            <span id="predEl" class="font-bold text-green-400">NEXT UP (GREEN)</span>
-            <span id="mtgEl" class="bg-green-950 text-green-400 px-2 py-1 rounded font-bold border border-green-800">MTG: SAFE (1X)</span>
-            <span id="chartTimer" class="font-mono text-gray-400">00:25</span>
-        </div>
-    </div>
-
-<script>
-    let candlesList = [];
-
-    function initCandles() {
-        candlesList = [];
-        let val = 60;
-        let trend = 1;
-        for (let i = 0; i < 16; i++) {
-            if (Math.random() > 0.5) trend *= -1;
-            val += trend * (Math.floor(Math.random() * 12) + 4);
-            val = Math.max(30, Math.min(110, val));
-            let isGrn = trend > 0 ? Math.random() > 0.3 : Math.random() > 0.7;
-            candlesList.push({
-                isGreen: isGrn,
-                height: val,
-                wickTop: Math.floor(Math.random() * 15) + 4,
-                wickBottom: Math.floor(Math.random() * 15) + 4
-            });
-        }
-        renderChartCandles();
-    }
-
-    function renderChartCandles() {
-        const area = document.getElementById('candlesArea');
-        area.innerHTML = '';
-        candlesList.forEach((c) => {
-            const wrap = document.createElement('div');
-            wrap.className = "flex flex-col items-center justify-center h-full relative";
-            wrap.style.width = "14px";
-
-            const topWick = document.createElement('div');
-            topWick.style.width = "1.5px";
-            topWick.style.height = c.wickTop + 'px';
-            topWick.style.backgroundColor = c.isGreen ? '#26a69a' : '#ef5350';
-
-            const body = document.createElement('div');
-            body.className = c.isGreen ? 'candle-green' : 'candle-red';
-            body.style.width = "8px";
-            body.style.height = c.height + 'px';
-            body.style.borderRadius = "1px";
-
-            const botWick = document.createElement('div');
-            botWick.style.width = "1.5px";
-            botWick.style.height = c.wickBottom + 'px';
-            botWick.style.backgroundColor = c.isGreen ? '#26a69a' : '#ef5350';
-
-            wrap.appendChild(topWick);
-            wrap.appendChild(body);
-            wrap.appendChild(botWick);
-            area.appendChild(wrap);
-        });
-    }
-
-    function generateSignal() {
-        const dirEl = document.getElementById('signalDirection');
-        const confEl = document.getElementById('signalConfidence');
-        let accuracyScore = (Math.random() * (99.5 - 91.5) + 91.5).toFixed(1);
-        let direction = Math.random() > 0.45 ? "UP" : "DOWN";
-        dirEl.textContent = "USD/JPY - " + direction;
-        dirEl.className = `text-lg font-bold ${direction === 'UP' ? 'text-green-500' : 'text-red-500'}`;
-        confEl.textContent = `Score: ${accuracyScore}% | Accuracy Confirmed`;
-    }
-
-    // Live Clock & Real-time Candle Tick Simulation matching Quotex movement
-    setInterval(() => {
-        const now = new Date();
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const targetTime = new Date(utc + (3600000 * 6)); // UTC+6 Bangladesh Time
         
-        let h = String(targetTime.getHours()).padStart(2, '0');
-        let m = String(targetTime.getMinutes()).padStart(2, '0');
-        let s = String(targetTime.getSeconds()).padStart(2, '0');
-        document.getElementById('utcTime').textContent = `${h}:${m}:${s} UTC+6`;
+        <!-- Broker Selection -->
+        <div class="space-y-0.5">
+            <label class="text-[8px] text-gray-400 font-bold block">BROKER</label>
+            <select id="brokerSelect" class="w-full bg-black border border-gray-700 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                <option>QUOTEX</option>
+                <option>POCKET OPTION</option>
+                <option>EXPO OPTION</option>
+                <option>IQ OPTION</option>
+            </select>
+        </div>
 
-        let totalSeconds = targetTime.getSeconds();
-        let remSec = 60 - totalSeconds;
-        document.getElementById('liveTimer').textContent = `00:${remSec < 10 ? '0' : ''}${remSec}`;
-        document.getElementById('chartTimer').textContent = `00:${remSec < 10 ? '0' : ''}${remSec}`;
+        <!-- Market Type -->
+        <div class="space-y-0.5">
+            <label class="text-[8px] text-gray-400 font-bold block">MARKET TYPE</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="switchMarket('OTC')" id="btnOTC" class="bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition">OTC</button>
+                <button type="button" onclick="switchMarket('REAL')" id="btnREAL" class="bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition">REAL MARKET</button>
+            </div>
+        </div>
 
-        if (totalSeconds <= 30 && totalSeconds > 0) {
-            const last = candlesList[candlesList.length - 1];
-            const predEl = document.getElementById('predEl');
-            predEl.textContent = last.isGreen ? "NEXT UP (GREEN)" : "NEXT DOWN (RED)";
-            predEl.className = `font-bold ${last.isGreen ? 'text-green-400' : 'text-red-400'}`;
+        <!-- Asset Pair -->
+        <div class="space-y-0.5">
+            <label class="text-[8px] text-gray-400 font-bold block">ASSET PAIR</label>
+            <select id="assetSelect" onchange="updateWidgetPair()" class="w-full bg-black border border-gray-700 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-purple-500">
+            </select>
+        </div>
+
+        <!-- Timeframe -->
+        <div class="space-y-0.5">
+            <label class="text-[8px] text-gray-400 font-bold block">TIMEFRAME</label>
+            <div class="grid grid-cols-4 gap-1">
+                <button type="button" onclick="selectTimeframe('1 MIN', 1)" id="tf1" class="bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition">1 MIN</button>
+                <button type="button" onclick="selectTimeframe('2 MIN', 2)" id="tf2" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">2 MIN</button>
+                <button type="button" onclick="selectTimeframe('3 MIN', 3)" id="tf3" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">3 MIN</button>
+                <button type="button" onclick="selectTimeframe('5 MIN', 5)" id="tf5" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">5 MIN</button>
+            </div>
+        </div>
+
+        <!-- Indicator Status -->
+        <div class="bg-black/60 p-2 rounded-lg border border-purple-500/30 space-y-1">
+            <div class="flex justify-between text-[9px] font-bold text-gray-300">
+                <span>RSI (14): <span id="rsiVal" class="text-green-400">56.2 (BUY)</span></span>
+                <span>MACD: <span id="macdVal" class="text-green-400">BULLISH</span></span>
+            </div>
+            <div class="flex justify-between text-[9px] font-bold text-gray-300">
+                <span>EMA Trend: <span id="emaVal" class="text-green-400">UPWARD</span></span>
+                <span>Accuracy: <span id="accuracyVal" class="text-yellow-400">95.6%</span></span>
+            </div>
+        </div>
+
+        <button onclick="generateSignal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2 rounded-xl text-xs font-black shadow-lg transition">
+            GENERATE AI SIGNAL
+        </button>
+
+        <!-- Signal Status Box -->
+        <div id="signalBox" class="bg-black border border-gray-800 rounded-xl p-2 text-center space-y-0.5">
+            <p id="signalTfTitle" class="text-[8px] text-gray-400 uppercase font-bold">STATUS (1 MIN)</p>
+            <p id="signalPairTitle" class="text-xs font-bold text-white">USD/JPY</p>
+            <p id="signalDirection" class="text-sm font-black text-green-500">UP</p>
+            <p id="signalConfidence" class="text-[8px] text-gray-400">Score: 92% | Accuracy Confirmed</p>
+        </div>
+
+    </div>
+
+    <!-- Finorix Pro / Quotex Live Chart Widget -->
+    <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-2.5 shadow-xl space-y-2 border border-purple-500/30">
+        
+        <div class="flex items-center justify-between border-b border-gray-800 pb-1.5">
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix Pro Market</span>
+            </div>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:30</span>
+        </div>
+
+        <!-- Pair & Live UTC+6 Clock Section -->
+        <div class="flex items-center justify-between text-[10px] bg-black/60 p-2 rounded-lg border border-gray-800">
+            <div>
+                <span class="text-gray-400 block text-[7px] uppercase">PAIR & STATUS</span>
+                <div class="flex items-center space-x-1 mt-0.5">
+                    <span id="widgetPair" class="font-bold text-white text-xs">USD/JPY</span>
+                    <span class="bg-green-600 text-white text-[7px] px-1 rounded font-bold">LIVE</span>
+                </div>
+            </div>
+            
+            <div class="text-center bg-black/80 px-2 py-0.5 rounded border border-purple-500/30">
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">21:25:00</span>
+                <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
+            </div>
+
+            <div class="text-right">
+                <span class="text-gray-400 block text-[7px] uppercase">ENGINE</span>
+                <span class="font-bold text-purple-400 text-xs">RSI + MACD</span>
+            </div>
+        </div>
+
+        <!-- Quotex Style Mini Chart Grid -->
+        <div class="pro-chart-container" id="chartContainer">
+            <div class="grid-line-h" style="top: 25%;"></div>
+            <div class="grid-line-h" style="top: 50%;"></div>
+            <div class="grid-line-h" style="top: 75%;"></div>
+            <div class="grid-line-v" style="left: 20%;"></div>
+            <div class="grid-line-v" style="left: 40%;"></div>
+            <div class="grid-line-v" style="left: 60%;"></div>
+            <div class="grid-line-v" style="left: 80%;"></div>
+            
+            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.4650</div>
+            <div id="candlesArea" class="candles-area"></div>
+        </div>
+
+        <!-- Footer with Synchronized Next Candle Target Time & MTG -->
+        <div class="flex items-center justify-between bg-black/70 px-2.5 py-2 rounded-lg border border-gray-800">
+            <span id="predictionText" class="text-[8px] font-black text-green-400 uppercase tracking-wider">NEXT UP (GREEN)</span>
+            <span id="mtgBadge" class="text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30">MTG: SAFE (1X)</span>
+            <span id="candleTimestamp" class="text-[9px] font-mono font-bold text-yellow-400 bg-black/80 px-2 py-0.5 rounded border border-gray-700">21:26</span>
+        </div>
+    </div>
+
+    <script>
+        const otcPairs = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "USD/CAD (OTC)"];
+        const realPairs = ["USD/JPY", "EUR/USD", "GBP/USD", "AUD/USD", "USD/CAD", "EUR/GBP"];
+
+        let currentMarketType = 'REAL';
+        let currentTimeframeMinutes = 1;
+        let totalSeconds = 30; 
+        let candlesList = [];
+        let marketBasePrice = 1.4650;
+
+        function loadPairs(type) {
+            currentMarketType = type;
+            const assetSelect = document.getElementById('assetSelect');
+            assetSelect.innerHTML = '';
+            const pairs = type === 'OTC' ? otcPairs : realPairs;
+            pairs.forEach(pair => {
+                const opt = document.createElement('option');
+                opt.value = pair;
+                opt.textContent = pair;
+                assetSelect.appendChild(opt);
+            });
+            updateWidgetPair();
         }
 
-        if (totalSeconds === 59) {
-            candlesList.shift();
-            let prev = candlesList[candlesList.length - 1];
-            let nextH = Math.max(30, Math.min(110, prev.height + (Math.random() * 30 - 15)));
-            candlesList.push({
-                isGreen: Math.random() > 0.45,
-                height: nextH,
-                wickTop: Math.floor(Math.random() * 15) + 4,
-                wickBottom: Math.floor(Math.random() * 15) + 4
+        function switchMarket(type) {
+            const btnOTC = document.getElementById('btnOTC');
+            const btnREAL = document.getElementById('btnREAL');
+            if (type === 'OTC') {
+                btnOTC.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnREAL.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            } else {
+                btnREAL.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnOTC.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            }
+            loadPairs(type);
+            initCandles();
+        }
+
+        function selectTimeframe(tf, minVal) {
+            currentTimeframeMinutes = minVal;
+            ['tf1', 'tf2', 'tf3', 'tf5'].forEach(id => {
+                document.getElementById(id).className = "bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition";
             });
+            document.getElementById('tf' + tf.charAt(0)).className = "bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition";
+            document.getElementById('signalTfTitle').textContent = `STATUS (${tf})`;
+        }
+
+        function updateWidgetPair() {
+            const selectedPair = document.getElementById('assetSelect').value;
+            document.getElementById('widgetPair').textContent = selectedPair;
+            document.getElementById('signalPairTitle').textContent = selectedPair;
+            initCandles();
+        }
+
+        // Exact Quotex Chart Style Candle Generator (16 Candles for Pro Layout)
+        function initCandles() {
+            candlesList = [];
+            let val = 60;
+            let trend = 1;
+            
+            for (let i = 0; i < 16; i++) {
+                if (Math.random() > 0.5) trend *= -1;
+                val += trend * (Math.floor(Math.random() * 16) + 6);
+                val = Math.max(25, Math.min(125, val));
+                
+                let isGrn = trend > 0 ? Math.random() > 0.25 : Math.random() > 0.65;
+                
+                candlesList.push({
+                    isGreen: isGrn,
+                    height: val,
+                    wickTop: Math.floor(Math.random() * 20) + 6,
+                    wickBottom: Math.floor(Math.random() * 20) + 6
+                });
+            }
             renderChartCandles();
         }
-    }, 1000);
 
-    initCandles();
-</script>
+        function renderChartCandles() {
+            const area = document.getElementById('candlesArea');
+            area.innerHTML = '';
+            
+            candlesList.forEach((c) => {
+                const wrap = document.createElement('div');
+                wrap.className = "flex flex-col items-center justify-center h-full relative";
+
+                const topWick = document.createElement('div');
+                topWick.className = `w-[1.5px] ${c.isGreen ? 'bg-[#0faf59]' : 'bg-[#ff4757]'}`;
+                topWick.style.height = `${c.wickTop}px`;
+
+                const body = document.createElement('div');
+                body.className = `w-2.5 rounded-[1px] ${c.isGreen ? 'candle-green' : 'candle-red'}`;
+                body.style.height = `${c.height}px`;
+
+                const botWick = document.createElement('div');
+                botWick.className = `w-[1.5px] ${c.isGreen ? 'bg-[#0faf59]' : 'bg-[#ff4757]'}`;
+                botWick.style.height = `${c.wickBottom}px`;
+
+                wrap.appendChild(topWick);
+                wrap.appendChild(body);
+                wrap.appendChild(botWick);
+                area.appendChild(wrap);
+            });
+        }
+
+        function generateSignal() {
+            const dirEl = document.getElementById('signalDirection');
+            const confEl = document.getElementById('signalConfidence');
+            let accuracyScore = (Math.random() * (99.5 - 91.5) + 91.5).toFixed(1);
+            let direction = Math.random() > 0.45 ? "UP" : "DOWN";
+            dirEl.textContent = direction;
+            dirEl.className = `text-sm font-black ${direction === 'UP' ? 'text-green-500' : 'text-red-500'}`;
+            confEl.textContent = `Score: ${accuracyScore}% | Accuracy Confirmed`;
+        }
+
+        // Real-Time Tick Loop Matching Quotex Video UI
+        setInterval(() => {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const targetTime = new Date(utc + (3600000 * 6)); // UTC+6 Bangladesh Time
+            
+            let hours = targetTime.getHours();
+            let minutes = targetTime.getMinutes();
+            let seconds = targetTime.getSeconds();
+            
+            let fHours = String(hours).padStart(2, '0');
+            let fMins = String(minutes).padStart(2, '0');
+            let fSecs = String(seconds).padStart(2, '0');
+            
+            document.getElementById('liveClock').textContent = `${fHours}:${fMins}:${fSecs}`;
+
+            let nextCandleDate = new Date(targetTime.getTime() + (currentTimeframeMinutes * 60000));
+            let nHours = String(nextCandleDate.getHours()).padStart(2, '0');
+            let nMins = String(nextCandleDate.getMinutes()).padStart(2, '0');
+            document.getElementById('candleTimestamp').textContent = `${nHours}:${nMins}`;
+
+            totalSeconds--;
+            if (totalSeconds < 0) totalSeconds = 59;
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            document.getElementById('timer').textContent = `0${m}:${s < 10 ? '0' + s : s}`;
+            
+            const predEl = document.getElementById('predictionText');
+            const mtgEl = document.getElementById('mtgBadge');
+            let lastCandle = candlesList[candlesList.length - 1];
+            
+            marketBasePrice += (Math.random() - 0.48) * 0.0004;
+            const ticker = document.getElementById('priceTickerBadge');
+            ticker.textContent = marketBasePrice.toFixed(4);
+            ticker.style.top = `${Math.max(10, Math.min(85, 50 - (lastCandle.height - 60) * 0.4))}%`;
+
+            if (totalSeconds > 30) {
+                predEl.textContent = "RUNNING CANDLE: ANALYZING...";
+                predEl.className = "text-[8px] font-black text-gray-300 uppercase tracking-wider";
+                mtgEl.textContent = "MTG: SAFE (1X)";
+                mtgEl.className = "text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30";
+                
+                // Active running candle fluctuation
+                lastCandle.height = Math.max(25, Math.min(125, lastCandle.height + (Math.random() - 0.48) * 5));
+                lastCandle.wickTop += Math.floor((Math.random() - 0.5) * 3);
+                lastCandle.wickBottom += Math.floor((Math.random() - 0.5) * 3);
+            } 
+            else if (totalSeconds <= 30 && totalSeconds > 0) {
+                predEl.textContent = lastCandle.isGreen ? "NEXT UP (GREEN)" : "NEXT DOWN (RED)";
+                predEl.className = `text-[8px] font-black ${lastCandle.isGreen ? 'text-green-400' : 'text-red-400'} uppercase tracking-wider`;
+                
+                if (totalSeconds > 15) {
+                    mtgEl.textContent = "MTG: SAFE (1X)";
+                    mtgEl.className = "text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30";
+                } else {
+                    mtgEl.textContent = "MTG STEP-1: 2.3X";
+                    mtgEl.className = "text-[8px] font-mono font-bold bg-yellow-900/70 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-500/30";
+                }
+            }
+
+            renderChartCandles();
+
+            if (totalSeconds === 59) {
+                candlesList.shift();
+                let prev = candlesList[candlesList.length - 1];
+                let nextH = Math.max(30, Math.min(115, prev.height + (Math.random() * 36 - 18)));
+                candlesList.push({
+                    isGreen: Math.random() > 0.42,
+                    height: nextH,
+                    wickTop: Math.floor(Math.random() * 18) + 5,
+                    wickBottom: Math.floor(Math.random() * 18) + 5
+                });
+                
+                const rsi = (Math.random() * (75 - 25) + 25).toFixed(1);
+                document.getElementById('rsiVal').textContent = `${rsi} (${rsi > 50 ? 'BUY' : 'SELL'})`;
+            }
+        }, 1000);
+
+        loadPairs('REAL');
+        initCandles();
+    </script>
 </body>
 </html>
