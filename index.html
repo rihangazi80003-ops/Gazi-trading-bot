@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+   <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,15 +8,15 @@
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
         .glass-card { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .candle-green { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
-        .candle-red { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
+        .candle-green { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.6); }
+        .candle-red { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.6); }
         
         .pro-chart-container {
             position: relative;
             background: #060913;
             border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 8px;
-            height: 145px;
+            height: 155px;
             overflow: hidden;
         }
         .grid-line-h {
@@ -94,7 +94,7 @@
         <!-- Indicator Status -->
         <div class="bg-black/50 p-2 rounded-lg border border-purple-500/30 space-y-1">
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
-                <span>RSI (14): <span id="rsiVal" class="text-green-400">48.4 (SELL)</span></span>
+                <span>RSI (14): <span id="rsiVal" class="text-green-400">52.7 (BUY)</span></span>
                 <span>MACD: <span id="macdVal" class="text-green-400">BULLISH</span></span>
             </div>
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
@@ -117,13 +117,13 @@
 
     </div>
 
-    <!-- Finorix Style Pro Live Chart Widget -->
+    <!-- Finorix Pro Style Live Chart Widget -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/30">
         
         <div class="flex items-center justify-between border-b border-gray-800 pb-1.5">
             <div class="flex items-center space-x-1.5">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix AI Market (Pro)</span>
+                <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix Pro Market</span>
             </div>
             <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:17</span>
         </div>
@@ -139,7 +139,7 @@
             </div>
             
             <div class="text-center bg-black/80 px-2 py-0.5 rounded border border-purple-500/30">
-                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">20:30:40</span>
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">19:50:18</span>
                 <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
             </div>
 
@@ -149,7 +149,7 @@
             </div>
         </div>
 
-        <!-- Pro Quotex Mini Chart Grid -->
+        <!-- Realistic Pro Quotex Mini Chart Grid -->
         <div class="pro-chart-container" id="chartContainer">
             <div class="grid-line-h" style="top: 25%;"></div>
             <div class="grid-line-h" style="top: 50%;"></div>
@@ -158,15 +158,15 @@
             <div class="grid-line-v" style="left: 50%;"></div>
             <div class="grid-line-v" style="left: 75%;"></div>
             
-            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0942</div>
+            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0890</div>
             <div id="candlesArea" class="candles-area"></div>
         </div>
 
-        <!-- Footer with Synchronized Next Candle Target Time -->
+        <!-- Footer with Synchronized Next Candle Target Time & MTG -->
         <div class="flex items-center justify-between bg-black/70 px-2.5 py-2 rounded-lg border border-gray-800">
             <span id="predictionText" class="text-[8px] font-black text-red-400 uppercase tracking-wider">NEXT DOWN (RED)</span>
             <span id="mtgBadge" class="text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30">MTG: SAFE (1X)</span>
-            <span id="candleTimestamp" class="text-[9px] font-mono font-bold text-yellow-400 bg-black/80 px-2 py-0.5 rounded border border-gray-700">20:31</span>
+            <span id="candleTimestamp" class="text-[9px] font-mono font-bold text-yellow-400 bg-black/80 px-2 py-0.5 rounded border border-gray-700">19:51</span>
         </div>
     </div>
 
@@ -178,7 +178,7 @@
         let currentTimeframeMinutes = 1;
         let totalSeconds = 17; 
         let candlesList = [];
-        let marketBasePrice = 1.0942;
+        let marketBasePrice = 1.0890;
 
         function loadPairs(type) {
             currentMarketType = type;
@@ -224,14 +224,24 @@
             initCandles();
         }
 
+        // Realistic Trend-based Candle Initialization (Like Real Market / Finorix Pro)
         function initCandles() {
             candlesList = [];
-            for (let i = 0; i < 13; i++) {
+            let baseHeight = 35;
+            let trendDir = 1; // 1 for upward trend momentum, -1 for downward
+            
+            for (let i = 0; i < 14; i++) {
+                if (Math.random() > 0.6) trendDir *= -1;
+                baseHeight += trendDir * (Math.floor(Math.random() * 8) - 3);
+                baseHeight = Math.max(15, Math.min(85, baseHeight));
+                
+                let isGrn = trendDir > 0 ? Math.random() > 0.3 : Math.random() > 0.6;
+                
                 candlesList.push({
-                    isGreen: Math.random() > 0.4,
-                    height: Math.floor(Math.random() * 55) + 20,
-                    wickTop: Math.floor(Math.random() * 12) + 3,
-                    wickBottom: Math.floor(Math.random() * 12) + 3
+                    isGreen: isGrn,
+                    height: baseHeight,
+                    wickTop: Math.floor(Math.random() * 18) + 4,
+                    wickBottom: Math.floor(Math.random() * 18) + 4
                 });
             }
             renderChartCandles();
@@ -250,7 +260,7 @@
                 topWick.style.height = `${c.wickTop}px`;
 
                 const body = document.createElement('div');
-                body.className = `w-2.5 rounded-[1px] ${c.isGreen ? 'candle-green' : 'candle-red'}`;
+                body.className = `w-2 rounded-[1px] ${c.isGreen ? 'candle-green' : 'candle-red'}`;
                 body.style.height = `${c.height}px`;
 
                 const botWick = document.createElement('div');
@@ -274,7 +284,7 @@
             confEl.textContent = `Score: ${accuracyScore}% | High Accuracy Confirmed`;
         }
 
-        // Live Loop with Synchronized Next Candle Target Time Calculation
+        // Live Real-Time Dynamic Loop mimicking Finorix Pro & Quotex Live Chart Structure
         setInterval(() => {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -284,13 +294,12 @@
             let minutes = targetTime.getMinutes();
             let seconds = targetTime.getSeconds();
             
-            let fHours = hours < 10 ? '0' + hours : hours;
-            let fMins = minutes < 10 ? '0' + minutes : minutes;
-            let fSecs = seconds < 10 ? '0' + seconds : seconds;
+            let fHours = String(hours).padStart(2, '0');
+            let fMins = String(minutes).padStart(2, '0');
+            let fSecs = String(seconds).padStart(2, '0');
             
             document.getElementById('liveClock').textContent = `${fHours}:${fMins}:${fSecs}`;
 
-            // Calculate target next candle time dynamically based on current time + timeframe
             let nextCandleDate = new Date(targetTime.getTime() + (currentTimeframeMinutes * 60000));
             let nHours = String(nextCandleDate.getHours()).padStart(2, '0');
             let nMins = String(nextCandleDate.getMinutes()).padStart(2, '0');
@@ -306,17 +315,22 @@
             const mtgEl = document.getElementById('mtgBadge');
             let lastCandle = candlesList[candlesList.length - 1];
             
-            marketBasePrice += (Math.random() - 0.48) * 0.0001;
+            marketBasePrice += (Math.random() - 0.48) * 0.0002;
             const ticker = document.getElementById('priceTickerBadge');
             ticker.textContent = marketBasePrice.toFixed(4);
-            ticker.style.top = `${Math.max(15, Math.min(80, 50 - (lastCandle.height - 35) * 0.6))}%`;
+            ticker.style.top = `${Math.max(15, Math.min(80, 50 - (lastCandle.height - 35) * 0.5))}%`;
 
+            // Real-time ticking effect on the current running candle
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
                 predEl.className = "text-[8px] font-black text-gray-300 uppercase tracking-wider";
                 mtgEl.textContent = "MTG: SAFE (1X)";
                 mtgEl.className = "text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30";
-                lastCandle.height = Math.max(15, Math.min(75, lastCandle.height + (Math.random() > 0.5 ? 1.2 : -1.2)));
+                
+                // Live tick animation on last candle body & wicks
+                lastCandle.height = Math.max(15, Math.min(85, lastCandle.height + (Math.random() - 0.48) * 3));
+                lastCandle.wickTop += Math.floor((Math.random() - 0.5) * 2);
+                lastCandle.wickBottom += Math.floor((Math.random() - 0.5) * 2);
             } 
             else if (totalSeconds <= 30 && totalSeconds > 0) {
                 predEl.textContent = lastCandle.isGreen ? "NEXT UP (GREEN)" : "NEXT DOWN (RED)";
@@ -333,13 +347,16 @@
 
             renderChartCandles();
 
+            // When a candle closes (New Minute Begins)
             if (totalSeconds === 59) {
                 candlesList.shift();
+                let prev = candlesList[candlesList.length - 1];
+                let nextHeight = Math.max(20, Math.min(80, prev.height + (Math.random() * 20 - 10)));
                 candlesList.push({
-                    isGreen: Math.random() > 0.42,
-                    height: Math.floor(Math.random() * 50) + 22,
-                    wickTop: Math.floor(Math.random() * 10) + 3,
-                    wickBottom: Math.floor(Math.random() * 10) + 3
+                    isGreen: Math.random() > 0.45,
+                    height: nextHeight,
+                    wickTop: Math.floor(Math.random() * 14) + 4,
+                    wickBottom: Math.floor(Math.random() * 14) + 4
                 });
                 
                 const rsi = (Math.random() * (70 - 30) + 30).toFixed(1);
