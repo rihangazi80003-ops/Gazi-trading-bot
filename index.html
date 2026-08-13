@@ -252,28 +252,32 @@
         function renderChartCandles() {
             const area = document.getElementById('candlesArea');
             area.innerHTML = '';
-            
             candlesList.forEach((c) => {
-                const wrap = document.createElement('div');
-                wrap.className = "flex flex-col items-center justify-center h-full relative";
+        const wrap = document.createElement('div');
+        wrap.className = "flex flex-col items-center justify-between h-full relative";
+        wrap.style.width = "14px";
 
-                const topWick = document.createElement('div');
-                topWick.className = `w-[1.5px] ${c.isGreen ? 'bg-[#0faf59]' : 'bg-[#ff4757]'}`;
-                topWick.style.height = `${c.wickTop}px`;
+        const topWick = document.createElement('div');
+        topWick.style.width = "2px";
+        topWick.style.height = c.wickTop + 'px';
+        topWick.style.backgroundColor = c.isGreen ? '#0faf59' : '#ff4757';
 
-                const body = document.createElement('div');
-                body.className = `w-2.5 rounded-[1px] ${c.isGreen ? 'candle-green' : 'candle-red'}`;
-                body.style.height = `${c.height}px`;
+        const body = document.createElement('div');
+        body.style.width = "10px";
+        body.style.height = c.height + 'px';
+        body.style.backgroundColor = c.isGreen ? '#0faf59' : '#ff4757';
+        body.style.borderRadius = "2px";
 
-                const botWick = document.createElement('div');
-                botWick.className = `w-[1.5px] ${c.isGreen ? 'bg-[#0faf59]' : 'bg-[#ff4757]'}`;
-                botWick.style.height = `${c.wickBottom}px`;
+        const botWick = document.createElement('div');
+        botWick.style.width = "2px";
+        botWick.style.height = c.wickBottom + 'px';
+        botWick.style.backgroundColor = c.isGreen ? '#0faf59' : '#ff4757';
 
-                wrap.appendChild(topWick);
-                wrap.appendChild(body);
-                wrap.appendChild(botWick);
-                area.appendChild(wrap);
-            });
+        wrap.appendChild(topWick);
+        wrap.appendChild(body);
+        wrap.appendChild(botWick);
+        area.appendChild(wrap);
+    });
         }
 
         function generateSignal() {
