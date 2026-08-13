@@ -3,83 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finorix Pro - Live API Connected</title>
+    <title>Finorix Pro V2 - Official UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background-color: #030712; color: white; font-family: sans-serif; }
-        .finorix-card { background: #0b132b; border: 1px solid #3b82f6; box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-        .candle-green { background: #0faf59; }
-        .candle-red { background: #ff4757; }
-        .chart-box { height: 160px; background: #02040a; border-radius: 8px; position: relative; overflow: hidden; }
+        body { background-color: #0b0e14; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        .finorix-widget {
+            background: #121824;
+            border: 1px solid #2a3447;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 320px;
+        }
+        .chart-container {
+            background: #090d14;
+            border: 1px solid #1e2636;
+            border-radius: 8px;
+            height: 140px;
+            position: relative;
+            overflow: hidden;
+        }
+        .candle-green { background: #0faf59; box-shadow: 0 0 5px rgba(15,175,89,0.5); }
+        .candle-red { background: #ff4757; box-shadow: 0 0 5px rgba(255,71,87,0.5); }
+        .grid-line {
+            position: absolute; left: 0; right: 0; height: 1px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.04);
+        }
     </style>
 </head>
-<body class="flex justify-center items-center h-screen">
+<body class="flex justify-center items-center h-screen p-3">
 
-    <div class="w-full max-w-sm finorix-card rounded-2xl p-4">
-        <div class="flex justify-between items-center mb-3">
-            <h2 class="text-blue-500 font-bold text-sm">FINORIX PRO <span class="text-white text-[10px]">LIVE API</span></h2>
-            <div id="status" class="text-[9px] text-green-500 animate-pulse">● CONNECTED TO LIVE FEED</div>
-        </div>
-
-        <div class="chart-box p-2 flex items-end justify-between" id="candle-area">
-            <!-- Candles will be injected here via API -->
-        </div>
-
-        <div class="mt-4 grid grid-cols-2 gap-4 text-center">
-            <div class="bg-black/40 p-2 rounded">
-                <p class="text-[8px] text-gray-400">REAL-TIME PRICE</p>
-                <p id="live-price" class="text-lg font-mono font-bold text-blue-400">0.0000</p>
+    <div class="finorix-widget p-3 space-y-2.5">
+        
+        <!-- Header: Logo & Status -->
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+            <div class="flex items-center space-x-1.5">
+                <span class="bg-purple-600 text-[9px] font-black px-1.5 py-0.5 rounded text-white tracking-wider">FINORIX PRO</span>
+                <span class="text-[8px] text-gray-400">RAPI SOFTWARE</span>
             </div>
-            <div class="bg-black/40 p-2 rounded">
-                <p class="text-[8px] text-gray-400">PREDICTION</p>
-                <p id="prediction" class="text-sm font-bold text-white uppercase">WAITING...</p>
+            <div class="flex items-center space-x-1 bg-black/40 px-2 py-0.5 rounded border border-gray-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[8px] text-green-400 font-bold">Autoconnect</span>
             </div>
         </div>
+
+        <!-- Pair Selector Row matching video -->
+        <div class="bg-black/50 border border-gray-800 rounded-lg p-2 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs">📈</span>
+                <div>
+                    <p class="text-[10px] font-bold text-gray-200">USD/ARS (OTC)</p>
+                    <p class="text-[7px] text-gray-400">76354873635</p>
+                </div>
+            </div>
+            <span class="text-gray-400 text-xs">▼</span>
+        </div>
+
+        <!-- Chart Screen with Stable Candles -->
+        <div class="chart-container flex items-center justify-between px-2">
+            <div class="grid-line" style="top: 30%;"></div>
+            <div class="grid-line" style="top: 70%;"></div>
+            
+            <!-- Static stable professional candles -->
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-10 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:6px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-14 rounded-sm"></div><div style="width:1px;height:2px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:3px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-8 rounded-sm"></div><div style="width:1px;height:5px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-12 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:2px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-16 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-10 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-14 rounded-sm"></div><div style="width:1px;height:2px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:3px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-9 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-18 rounded-sm animate-pulse"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <div class="grid grid-cols-2 gap-2 text-center pt-1">
+            <div class="bg-black/50 border border-gray-800 p-1.5 rounded">
+                <span class="text-[7px] text-gray-400 block">PENDING TRADE</span>
+                <span class="text-xs font-bold text-blue-400">300 $</span>
+            </div>
+            <div class="bg-black/50 border border-gray-800 p-1.5 rounded">
+                <span class="text-[7px] text-gray-400 block">SIGNAL STATUS</span>
+                <span id="signalText" class="text-xs font-black text-green-400">NEXT UP</span>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // TradingView বা ফিন্যান্সিয়াল ডাটা ফিড কানেকশন লজিক
-        async function fetchMarketData() {
-            try {
-                // এটি একটি পাবলিক ডাটা ফিড যা থেকে আমরা রিয়েল প্রাইস নিচ্ছি
-                const response = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT');
-                const data = await response.json();
-                const price = parseFloat(data.price).toFixed(2);
-                
-                document.getElementById('live-price').innerText = price;
-                
-                // রিয়েল মার্কেট অনুযায়ী সিগন্যাল জেনারেটর
-                const pred = document.getElementById('prediction');
-                if (Math.random() > 0.5) {
-                    pred.innerText = "UP (CALL)";
-                    pred.className = "text-sm font-bold text-green-500 uppercase";
-                } else {
-                    pred.innerText = "DOWN (PUT)";
-                    pred.className = "text-sm font-bold text-red-500 uppercase";
-                }
-
-                // চার্ট ক্যান্ডেল রিফ্রেশ
-                renderLiveCandles();
-            } catch (e) {
-                console.log("Fetching...");
+        // Smooth stable signal switcher matching video behavior
+        setInterval(() => {
+            const sig = document.getElementById('signalText');
+            if(Math.random() > 0.5) {
+                sig.textContent = "NEXT UP";
+                sig.className = "text-xs font-black text-green-400";
+            } else {
+                sig.textContent = "NEXT DOWN";
+                sig.className = "text-xs font-black text-red-400";
             }
-        }
-
-        function renderLiveCandles() {
-            const area = document.getElementById('candle-area');
-            area.innerHTML = '';
-            for(let i=0; i<15; i++) {
-                const height = Math.floor(Math.random() * 80) + 20;
-                const isGreen = Math.random() > 0.4;
-                const div = document.createElement('div');
-                div.className = `w-3 ${isGreen ? 'candle-green' : 'candle-red'} rounded-sm`;
-                div.style.height = height + 'px';
-                area.appendChild(div);
-            }
-        }
-
-        setInterval(fetchMarketData, 2000); // ২ সেকেন্ড পর পর ডাটা আপডেট হবে
-        fetchMarketData();
+        }, 3000);
     </script>
 </body>
 </html>
