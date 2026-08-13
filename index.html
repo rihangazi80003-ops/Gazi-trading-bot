@@ -90,7 +90,7 @@
 
     </div>
 
-    <!-- Live Chart & AI Widget with UTC+6 Live Clock -->
+    <!-- Live Chart & AI Widget with Dynamic Time Stamps -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/20">
         
         <div class="flex items-center justify-between border-b border-gray-800 pb-2">
@@ -101,7 +101,7 @@
             <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold">01:00</span>
         </div>
 
-        <!-- Added Live Market Time (UTC+6) section exactly where you marked in screenshot -->
+        <!-- Pair & Live UTC+6 Clock Section -->
         <div class="flex items-center justify-between text-[10px] bg-black/50 p-2 rounded-lg border border-gray-800">
             <div>
                 <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
@@ -111,7 +111,6 @@
                 </div>
             </div>
             
-            <!-- Live Clock UTC+6 Display -->
             <div class="text-center bg-black/80 px-2 py-1 rounded border border-purple-500/30">
                 <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">11:56:56</span>
                 <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
@@ -126,8 +125,10 @@
         <!-- 15 Candlestick Chart -->
         <div id="chartGrid" class="chart-grid"></div>
 
-        <div class="text-center bg-black/60 py-1.5 rounded-lg border border-gray-800">
-            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE...</span>
+        <!-- Dynamic Prediction Footer with Candlestick Timestamp -->
+        <div class="flex items-center justify-between bg-black/60 px-3 py-1.5 rounded-lg border border-gray-800">
+            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE: ANALYZING...</span>
+            <span id="candleTimeBadge" class="text-[9px] font-mono font-bold bg-purple-900/60 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">12:18</span>
         </div>
     </div>
 
@@ -246,11 +247,9 @@
             }
         }
 
-        // Real-time UTC+6 clock and smooth candle loop
+        // Real-time UTC+6 clock, dynamic timestamp, and smooth candle loop
         setInterval(() => {
-            // Live UTC+6 Clock update (Hour:Minute:Second)
             const now = new Date();
-            // Adjusting to UTC+6 Bangladesh/Standard Time offset accurately
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
             const targetTime = new Date(utc + (3600000 * 6));
             
@@ -258,11 +257,20 @@
             let minutes = targetTime.getMinutes();
             let seconds = targetTime.getSeconds();
             
-            hours = hours < 10 ? '0' + hours : hours;
-            minutes = minutes < 10 ? '0' + minutes : minutes;
-            seconds = seconds < 10 ? '0' + seconds : seconds;
+            let formattedHours = hours < 10 ? '0' + hours : hours;
+            let formattedMins = minutes < 10 ? '0' + minutes : minutes;
+            let formattedSecs = seconds < 10 ? '0' + seconds : seconds;
             
-            document.getElementById('liveClock').textContent = `${hours}:${minutes}:${seconds}`;
+            // Update Main UTC+6 Clock
+            document.getElementById('liveClock').textContent = `${formattedHours}:${formattedMins}:${formattedSecs}`;
+
+            // Calculate next candle time for 30s prediction badge
+            let nextCandleTime = new Date(targetTime.getTime() + 60000);
+            let nextMins = nextCandleTime.getMinutes();
+            let nextMinsFormatted = nextMins < 10 ? '0' + nextMins : nextMins;
+            let nextTimeStr = `${nextCandleTime.getHours()}:${nextMinsFormatted}`;
+
+            let currentTimeStr = `${formattedHours}:${formattedMins}`;
 
             // Countdown timer & Candle update logic
             totalSeconds--;
@@ -271,16 +279,19 @@
             document.getElementById('timer').textContent = `0${mins}:${secs < 10 ? '0' + secs : secs}`;
             
             const predEl = document.getElementById('predictionText');
+            const timeBadge = document.getElementById('candleTimeBadge');
             let lastCandle = candleDataList[candleDataList.length - 1];
             
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
                 predEl.className = "text-[10px] font-black text-gray-400 uppercase tracking-wider";
+                timeBadge.textContent = currentTimeStr; // রানিং ক্যান্ডেলের বর্তমান টাইম
                 lastCandle.height = Math.max(20, Math.min(80, lastCandle.height + (Math.random() > 0.5 ? 2 : -2)));
             } 
             else if (totalSeconds <= 30 && totalSeconds > 0) {
                 predEl.textContent = lastCandle.isGreen ? "30S PREDICTION: NEXT UP (GREEN)" : "30S PREDICTION: NEXT DOWN (RED)";
                 predEl.className = `text-[10px] font-black ${lastCandle.isGreen ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
+                timeBadge.textContent = nextTimeStr; // পরবর্তী ক্যান্ডেল ক্লোজিং টাইম
                 
                 lastCandle.height = Math.max(20, Math.min(85, lastCandle.height + (Math.random() > 0.5 ? 3 : -3)));
             }
@@ -299,7 +310,6 @@
                 
                 const rsi = (Math.random() * (70 - 30) + 30).toFixed(1);
                 document.getElementById('rsiVal').textContent = `${rsi} (${rsi > 50 ? 'BUY' : 'SELL'})`;
-                document.getElementById('rsiVal5').className = rsi > 50 ? "text-green-400" : "text-red-400";
             }
         }, 1000);
 
