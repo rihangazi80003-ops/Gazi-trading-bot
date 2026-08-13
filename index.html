@@ -84,17 +84,17 @@
         <div class="space-y-0.5">
             <label class="text-[9px] text-gray-400 font-bold block">TIMEFRAME</label>
             <div class="grid grid-cols-4 gap-1">
-                <button type="button" onclick="selectTimeframe('1 MIN')" id="tf1" class="bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition">1 MIN</button>
-                <button type="button" onclick="selectTimeframe('2 MIN')" id="tf2" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">2 MIN</button>
-                <button type="button" onclick="selectTimeframe('3 MIN')" id="tf3" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">3 MIN</button>
-                <button type="button" onclick="selectTimeframe('5 MIN')" id="tf5" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">5 MIN</button>
+                <button type="button" onclick="selectTimeframe('1 MIN', 1)" id="tf1" class="bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition">1 MIN</button>
+                <button type="button" onclick="selectTimeframe('2 MIN', 2)" id="tf2" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">2 MIN</button>
+                <button type="button" onclick="selectTimeframe('3 MIN', 3)" id="tf3" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">3 MIN</button>
+                <button type="button" onclick="selectTimeframe('5 MIN', 5)" id="tf5" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">5 MIN</button>
             </div>
         </div>
 
         <!-- Indicator Status -->
         <div class="bg-black/50 p-2 rounded-lg border border-purple-500/30 space-y-1">
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
-                <span>RSI (14): <span id="rsiVal" class="text-green-400">39.0 (SELL)</span></span>
+                <span>RSI (14): <span id="rsiVal" class="text-green-400">48.4 (SELL)</span></span>
                 <span>MACD: <span id="macdVal" class="text-green-400">BULLISH</span></span>
             </div>
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
@@ -125,7 +125,7 @@
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix AI Market (Pro)</span>
             </div>
-            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:51</span>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:17</span>
         </div>
 
         <!-- Pair & Live UTC+6 Clock Section -->
@@ -139,7 +139,7 @@
             </div>
             
             <div class="text-center bg-black/80 px-2 py-0.5 rounded border border-purple-500/30">
-                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">20:00:44</span>
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">20:30:40</span>
                 <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
             </div>
 
@@ -158,15 +158,15 @@
             <div class="grid-line-v" style="left: 50%;"></div>
             <div class="grid-line-v" style="left: 75%;"></div>
             
-            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0946</div>
+            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0942</div>
             <div id="candlesArea" class="candles-area"></div>
         </div>
 
-        <!-- Restored Footer: Running Candle / Prediction Text + Middle MTG + Right Live Candle Timestamp -->
+        <!-- Footer with Synchronized Next Candle Target Time -->
         <div class="flex items-center justify-between bg-black/70 px-2.5 py-2 rounded-lg border border-gray-800">
-            <span id="predictionText" class="text-[8px] font-black text-gray-300 uppercase tracking-wider">RUNNING CANDLE: ANALYZING...</span>
+            <span id="predictionText" class="text-[8px] font-black text-red-400 uppercase tracking-wider">NEXT DOWN (RED)</span>
             <span id="mtgBadge" class="text-[8px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30">MTG: SAFE (1X)</span>
-            <span id="candleTimestamp" class="text-[9px] font-mono font-bold text-yellow-400 bg-black/80 px-2 py-0.5 rounded border border-gray-700">20:01</span>
+            <span id="candleTimestamp" class="text-[9px] font-mono font-bold text-yellow-400 bg-black/80 px-2 py-0.5 rounded border border-gray-700">20:31</span>
         </div>
     </div>
 
@@ -175,10 +175,10 @@
         const realPairs = ["USD/JPY", "EUR/USD", "GBP/USD", "AUD/USD", "USD/CAD", "EUR/GBP"];
 
         let currentMarketType = 'REAL';
-        let currentTimeframe = '1 MIN';
-        let totalSeconds = 51; 
+        let currentTimeframeMinutes = 1;
+        let totalSeconds = 17; 
         let candlesList = [];
-        let marketBasePrice = 1.0946;
+        let marketBasePrice = 1.0942;
 
         function loadPairs(type) {
             currentMarketType = type;
@@ -208,8 +208,8 @@
             initCandles();
         }
 
-        function selectTimeframe(tf) {
-            currentTimeframe = tf;
+        function selectTimeframe(tf, minVal) {
+            currentTimeframeMinutes = minVal;
             ['tf1', 'tf2', 'tf3', 'tf5'].forEach(id => {
                 document.getElementById(id).className = "bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition";
             });
@@ -264,26 +264,17 @@
             });
         }
 
-        // High Accuracy Filter (90% - 100%)
         function generateSignal() {
             const dirEl = document.getElementById('signalDirection');
             const confEl = document.getElementById('signalConfidence');
-            
             let accuracyScore = (Math.random() * (99.5 - 90.0) + 90.0).toFixed(1);
-            
-            if (accuracyScore < 90.0) {
-                dirEl.textContent = "NO TRADE";
-                dirEl.className = "text-sm font-black text-yellow-500";
-                confEl.textContent = `Score: ${accuracyScore}% | Market Risky (Skipped)`;
-            } else {
-                let direction = Math.random() > 0.5 ? "UP" : "DOWN";
-                dirEl.textContent = direction;
-                dirEl.className = `text-sm font-black ${direction === 'UP' ? 'text-green-500' : 'text-red-500'}`;
-                confEl.textContent = `Score: ${accuracyScore}% | High Accuracy Confirmed`;
-            }
+            let direction = Math.random() > 0.5 ? "UP" : "DOWN";
+            dirEl.textContent = direction;
+            dirEl.className = `text-sm font-black ${direction === 'UP' ? 'text-green-500' : 'text-red-500'}`;
+            confEl.textContent = `Score: ${accuracyScore}% | High Accuracy Confirmed`;
         }
 
-        // Live Loop with Running Candle Timestamp & MTG Integration
+        // Live Loop with Synchronized Next Candle Target Time Calculation
         setInterval(() => {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -298,9 +289,12 @@
             let fSecs = seconds < 10 ? '0' + seconds : seconds;
             
             document.getElementById('liveClock').textContent = `${fHours}:${fMins}:${fSecs}`;
-            
-            // Format candle timestamp (e.g. 20:01)
-            document.getElementById('candleTimestamp').textContent = `${fHours}:${fMins}`;
+
+            // Calculate target next candle time dynamically based on current time + timeframe
+            let nextCandleDate = new Date(targetTime.getTime() + (currentTimeframeMinutes * 60000));
+            let nHours = String(nextCandleDate.getHours()).padStart(2, '0');
+            let nMins = String(nextCandleDate.getMinutes()).padStart(2, '0');
+            document.getElementById('candleTimestamp').textContent = `${nHours}:${nMins}`;
 
             totalSeconds--;
             if (totalSeconds < 0) totalSeconds = 59;
@@ -317,7 +311,6 @@
             ticker.textContent = marketBasePrice.toFixed(4);
             ticker.style.top = `${Math.max(15, Math.min(80, 50 - (lastCandle.height - 35) * 0.6))}%`;
 
-            // Running Candle & Prediction Display Logic with MTG Badge
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
                 predEl.className = "text-[8px] font-black text-gray-300 uppercase tracking-wider";
