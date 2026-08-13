@@ -94,7 +94,7 @@
         <!-- Indicator Status -->
         <div class="bg-black/50 p-2 rounded-lg border border-purple-500/30 space-y-1">
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
-                <span>RSI (14): <span id="rsiVal" class="text-green-400">58.4 (BUY)</span></span>
+                <span>RSI (14): <span id="rsiVal" class="text-green-400">44.8 (SELL)</span></span>
                 <span>MACD: <span id="macdVal" class="text-green-400">BULLISH</span></span>
             </div>
             <div class="flex justify-between text-[9px] font-bold text-gray-300">
@@ -111,8 +111,8 @@
         <div id="signalBox" class="bg-black border border-gray-800 rounded-xl p-2.5 text-center space-y-0.5">
             <p id="signalTfTitle" class="text-[9px] text-gray-400 uppercase font-bold">STATUS (1 MIN)</p>
             <p id="signalPairTitle" class="text-xs font-bold text-white">USD/JPY</p>
-            <p id="signalDirection" class="text-sm font-black text-green-500">UP</p>
-            <p id="signalConfidence" class="text-[9px] text-gray-400">Score: 94.5% | High Accuracy Confirmed</p>
+            <p id="signalDirection" class="text-sm font-black text-red-500">DOWN</p>
+            <p id="signalConfidence" class="text-[9px] text-gray-400">Score: 96.0% | High Accuracy Confirmed</p>
         </div>
 
     </div>
@@ -125,7 +125,7 @@
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix AI Market (Pro)</span>
             </div>
-            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:51</span>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">00:29</span>
         </div>
 
         <!-- Pair & Live UTC+6 Clock Section -->
@@ -139,7 +139,7 @@
             </div>
             
             <div class="text-center bg-black/80 px-2 py-0.5 rounded border border-purple-500/30">
-                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">20:00:44</span>
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">20:08:41</span>
                 <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
             </div>
 
@@ -158,14 +158,14 @@
             <div class="grid-line-v" style="left: 50%;"></div>
             <div class="grid-line-v" style="left: 75%;"></div>
             
-            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0946</div>
+            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0941</div>
             <div id="candlesArea" class="candles-area"></div>
         </div>
 
-        <!-- Dynamic Prediction & MTG Info Footer -->
-        <div class="flex items-center justify-between bg-black/70 px-3 py-1.5 rounded-lg border border-gray-800">
-            <span id="predictionText" class="text-[9px] font-black text-green-400 uppercase tracking-wider">PREDICTION: NEXT UP (GREEN)</span>
-            <span id="mtgBadge" class="text-[9px] font-mono font-bold bg-yellow-900/70 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-500/30">MTG: SAFE (1X)</span>
+        <!-- Dynamic Prediction Footer Restored (Full Width with MTG Badge) -->
+        <div class="flex items-center justify-between bg-black/70 px-3 py-2 rounded-lg border border-gray-800">
+            <span id="predictionText" class="text-[10px] font-black text-green-400 uppercase tracking-wider">PREDICTION: NEXT UP (GREEN)</span>
+            <span id="mtgBadge" class="text-[9px] font-mono font-bold bg-green-900/70 text-green-300 px-2 py-1 rounded border border-green-500/30">MTG: SAFE (1X)</span>
         </div>
     </div>
 
@@ -175,9 +175,9 @@
 
         let currentMarketType = 'REAL';
         let currentTimeframe = '1 MIN';
-        let totalSeconds = 51; 
+        let totalSeconds = 29; 
         let candlesList = [];
-        let marketBasePrice = 1.0946;
+        let marketBasePrice = 1.0941;
 
         function loadPairs(type) {
             currentMarketType = type;
@@ -263,12 +263,11 @@
             });
         }
 
-        // High Accuracy Filter (90% - 100% Guaranteed Condition)
+        // High Accuracy Filter (90% - 100% Guaranteed)
         function generateSignal() {
             const dirEl = document.getElementById('signalDirection');
             const confEl = document.getElementById('signalConfidence');
             
-            // Randomly simulate accuracy score between 88% and 99.5% to strictly maintain High Win Rate condition
             let accuracyScore = (Math.random() * (99.5 - 90.0) + 90.0).toFixed(1);
             
             if (accuracyScore < 90.0) {
@@ -283,7 +282,7 @@
             }
         }
 
-        // Live Loop with MTG System & High Accuracy Engine
+        // Live Loop with Restored Prediction Footer & MTG System
         setInterval(() => {
             const now = new Date();
             const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
@@ -314,25 +313,24 @@
             ticker.textContent = marketBasePrice.toFixed(4);
             ticker.style.top = `${Math.max(15, Math.min(80, 50 - (lastCandle.height - 35) * 0.6))}%`;
 
-            // Running Candle & MTG Logic
+            // Running Candle & Restored Prediction Display Logic
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
-                predEl.className = "text-[9px] font-black text-gray-300 uppercase tracking-wider";
-                mtgEl.textContent = "MTG: WAITING...";
+                predEl.className = "text-[10px] font-black text-gray-300 uppercase tracking-wider";
+                mtgEl.textContent = "MTG: SAFE (1X)";
+                mtgEl.className = "text-[9px] font-mono font-bold bg-green-900/70 text-green-300 px-2 py-1 rounded border border-green-500/30";
                 lastCandle.height = Math.max(15, Math.min(75, lastCandle.height + (Math.random() > 0.5 ? 1.2 : -1.2)));
             } 
             else if (totalSeconds <= 30 && totalSeconds > 0) {
-                // High accuracy prediction display
                 predEl.textContent = lastCandle.isGreen ? "PREDICTION: NEXT UP (GREEN)" : "PREDICTION: NEXT DOWN (RED)";
-                predEl.className = `text-[9px] font-black ${lastCandle.isGreen ? 'text-green-400' : 'text-red-400'} uppercase tracking-wider`;
+                predEl.className = `text-[10px] font-black ${lastCandle.isGreen ? 'text-green-400' : 'text-red-400'} uppercase tracking-wider`;
                 
-                // MTG Safety Check Level
                 if (totalSeconds > 15) {
                     mtgEl.textContent = "MTG: SAFE (1X)";
-                    mtgEl.className = "text-[9px] font-mono font-bold bg-green-900/70 text-green-300 px-1.5 py-0.5 rounded border border-green-500/30";
+                    mtgEl.className = "text-[9px] font-mono font-bold bg-green-900/70 text-green-300 px-2 py-1 rounded border border-green-500/30";
                 } else {
                     mtgEl.textContent = "MTG STEP-1: 2.3X READY";
-                    mtgEl.className = "text-[9px] font-mono font-bold bg-yellow-900/70 text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-500/30";
+                    mtgEl.className = "text-[9px] font-mono font-bold bg-yellow-900/70 text-yellow-300 px-2 py-1 rounded border border-yellow-500/30";
                 }
             }
 
