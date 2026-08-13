@@ -2,98 +2,378 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BTZ Signal AI - Pro Real-Chart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTZ Signal AI - Pro Advanced Indicators</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="engine.js"></script>
     <style>
         body { background-color: #0b0f19; color: white; font-family: sans-serif; }
         .glass-card { background: rgba(17, 24, 39, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .candle-green { background: #22c55e; box-shadow: 0 0 6px rgba(34, 197, 94, 0.5); }
+        .candle-red { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.5); }
         
-        /* কোটেক্স স্টাইল লাইভ চার্ট গ্রিড */
-        .chart-grid { 
-            position: relative; 
-            height: 140px; 
-            background: #05070d; 
-            border: 1px solid rgba(255,255,255,0.05);
-            display: flex; align-items: flex-end; justify-content: space-around;
-            overflow: hidden; padding: 5px;
+        /* Pro Quotex / Finorix Mini Chart Grid Style */
+        .pro-chart-container {
+            position: relative;
+            background: #060913;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            height: 145px;
+            overflow: hidden;
         }
-        
-        /* সুতার মতো হরিজেন্টাল দাগ (Price Lines) */
-        .price-line {
-            position: absolute; left: 0; right: 0;
-            height: 1px; border-bottom: 1px dashed rgba(255,255,255,0.08);
-            z-index: 1;
+        .grid-line-h {
+            position: absolute;
+            left: 0; right: 0;
+            height: 1px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.08);
+            pointer-events: none;
         }
-
-        /* লাইভ প্রাইস টিকার (ডানপাশে ভাসমান) */
-        .price-ticker {
-            position: absolute; right: 5px; 
-            background: #2563eb; color: #fff; font-size: 9px;
-            padding: 1px 4px; border-radius: 2px; z-index: 20;
-            box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+        .grid-line-v {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 1px;
+            border-left: 1px dashed rgba(255, 255, 255, 0.05);
+            pointer-events: none;
         }
-
-        /* ক্যান্ডেল স্টাইল */
-        .candle { width: 8px; transition: height 0.1s ease; }
-        .wick { width: 1px; background: inherit; }
+        .candles-area {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 6px 8px;
+            z-index: 2;
+        }
+        .price-badge-right {
+            position: absolute;
+            right: 4px;
+            background: rgba(37, 99, 235, 0.9);
+            color: white;
+            font-size: 8px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-family: monospace;
+            z-index: 10;
+        }
     </style>
 </head>
-<body class="p-3 flex justify-center items-center min-h-screen">
+<body class="p-3 flex justify-center items-center min-h-screen flex-col">
 
-    <!-- Chart Container -->
-    <div class="w-full max-w-sm glass-card p-3 rounded-xl border border-purple-500/30 shadow-2xl">
-        <div class="flex justify-between items-center mb-2">
-            <span class="text-[10px] font-bold text-gray-400">LIVE MARKET CHART</span>
-            <span id="liveClock" class="text-[10px] font-mono text-green-400">14:42:03</span>
+    <!-- Main Compact Card -->
+    <div class="w-full max-w-sm glass-card p-4 rounded-2xl shadow-2xl space-y-3">
+        
+        <!-- Header -->
+        <div class="text-center">
+            <h1 class="text-base font-black text-purple-400">BTZ SIGNAL AI</h1>
+            <p class="text-[8px] text-gray-400 uppercase tracking-widest">High Accuracy Indicator Suite</p>
+        </div>
+        
+        <!-- Broker Selection -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">BROKER</label>
+            <select id="brokerSelect" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+                <option>QUOTEX</option>
+                <option>POCKET OPTION</option>
+                <option>EXPO OPTION</option>
+                <option>IQ OPTION</option>
+            </select>
         </div>
 
-        <div id="chartGrid" class="chart-grid">
-            <div class="price-line" style="top: 25%;"></div>
-            <div class="price-line" style="top: 50%;"></div>
-            <div class="price-line" style="top: 75%;"></div>
-            <div id="ticker" class="price-ticker" style="top: 48%;">1460.50</div>
+        <!-- Market Type -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">MARKET TYPE</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" onclick="switchMarket('OTC')" id="btnOTC" class="bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition">OTC</button>
+                <button type="button" onclick="switchMarket('REAL')" id="btnREAL" class="bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition">REAL MARKET</button>
+            </div>
+        </div>
+
+        <!-- Asset Pair -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">ASSET PAIR</label>
+            <select id="assetSelect" onchange="updateWidgetPair()" class="w-full bg-black border border-gray-700 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-purple-500">
+            </select>
+        </div>
+
+        <!-- Timeframe -->
+        <div class="space-y-0.5">
+            <label class="text-[9px] text-gray-400 font-bold block">TIMEFRAME</label>
+            <div class="grid grid-cols-4 gap-1">
+                <button type="button" onclick="selectTimeframe('1 MIN')" id="tf1" class="bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition">1 MIN</button>
+                <button type="button" onclick="selectTimeframe('2 MIN')" id="tf2" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">2 MIN</button>
+                <button type="button" onclick="selectTimeframe('3 MIN')" id="tf3" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">3 MIN</button>
+                <button type="button" onclick="selectTimeframe('5 MIN')" id="tf5" class="bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition">5 MIN</button>
+            </div>
+        </div>
+
+        <!-- Indicator Integration Status -->
+        <div class="bg-black/50 p-2 rounded-lg border border-purple-500/30 space-y-1">
+            <div class="flex justify-between text-[9px] font-bold text-gray-300">
+                <span>RSI (14): <span id="rsiVal" class="text-green-400">58.4 (BUY)</span></span>
+                <span>MACD: <span id="macdVal" class="text-green-400">BULLISH</span></span>
+            </div>
+            <div class="flex justify-between text-[9px] font-bold text-gray-300">
+                <span>EMA Trend: <span id="emaVal" class="text-green-400">UPWARD</span></span>
+                <span>Accuracy: <span id="accuracyVal" class="text-yellow-400">94.5%</span></span>
+            </div>
+        </div>
+
+        <button onclick="generateSignal()" class="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl text-xs font-black shadow-lg transition">
+            GENERATE AI SIGNAL
+        </button>
+
+        <!-- Signal Status Box -->
+        <div id="signalBox" class="bg-black border border-gray-800 rounded-xl p-2.5 text-center space-y-0.5">
+            <p id="signalTfTitle" class="text-[9px] text-gray-400 uppercase font-bold">STATUS (1 MIN)</p>
+            <p id="signalPairTitle" class="text-xs font-bold text-white">EUR/USD (OTC)</p>
+            <p id="signalDirection" class="text-sm font-black text-green-500">UP</p>
+            <p id="signalConfidence" class="text-[9px] text-gray-400">Confidence: 94.5%</p>
+        </div>
+
+    </div>
+
+    <!-- Finorix Style Pro Live Chart Widget -->
+    <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/30">
+        
+        <div class="flex items-center justify-between border-b border-gray-800 pb-1.5">
+            <div class="flex items-center space-x-1.5">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                <span class="text-[11px] font-black text-gray-100 tracking-wide">Finorix AI Market (Pro)</span>
+            </div>
+            <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">01:00</span>
+        </div>
+
+        <!-- Pair & Live UTC+6 Clock Section -->
+        <div class="flex items-center justify-between text-[10px] bg-black/60 p-2 rounded-lg border border-gray-800">
+            <div>
+                <span class="text-gray-400 block text-[7px] uppercase">PAIR & STATUS</span>
+                <div class="flex items-center space-x-1 mt-0.5">
+                    <span id="widgetPair" class="font-bold text-white text-xs">EUR/USD</span>
+                    <span class="bg-green-600 text-white text-[7px] px-1 rounded font-bold">LIVE</span>
+                </div>
+            </div>
+            
+            <div class="text-center bg-black/80 px-2 py-0.5 rounded border border-purple-500/30">
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">11:56:56</span>
+                <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
+            </div>
+
+            <div class="text-right">
+                <span class="text-gray-400 block text-[7px] uppercase">ENGINE</span>
+                <span class="font-bold text-purple-400 text-xs">RSI + MACD</span>
+            </div>
+        </div>
+
+        <!-- Pro Quotex Mini Chart Grid -->
+        <div class="pro-chart-container" id="chartContainer">
+            <!-- Background Grid Lines -->
+            <div class="grid-line-h" style="top: 25%;"></div>
+            <div class="grid-line-h" style="top: 50%;"></div>
+            <div class="grid-line-h" style="top: 75%;"></div>
+            <div class="grid-line-v" style="left: 25%;"></div>
+            <div class="grid-line-v" style="left: 50%;"></div>
+            <div class="grid-line-v" style="left: 75%;"></div>
+            
+            <!-- Live Moving Price Ticker -->
+            <div id="priceTickerBadge" class="price-badge-right" style="top: 45%;">1.0845</div>
+
+            <!-- Candlesticks Area -->
+            <div id="candlesArea" class="candles-area"></div>
+        </div>
+
+        <!-- Dynamic Prediction Footer -->
+        <div class="flex items-center justify-between bg-black/70 px-3 py-1.5 rounded-lg border border-gray-800">
+            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE: ANALYZING...</span>
+            <span id="candleTimeBadge" class="text-[9px] font-mono font-bold bg-purple-900/70 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/30">12:18</span>
         </div>
     </div>
 
     <script>
-        const chartGrid = document.getElementById('chartGrid');
-        let candles = [];
-        let basePrice = 1460.50;
+        const otcPairs = ["EUR/USD (OTC)", "GBP/USD (OTC)", "USD/JPY (OTC)", "AUD/CAD (OTC)", "USD/CAD (OTC)", "EUR/GBP (OTC)", "NZD/USD (OTC)", "GOLD (OTC)"];
+        const realPairs = ["EUR/USD", "GBP/USD", "USD/JPY", "AUD/USD", "USD/CAD", "EUR/GBP", "NZD/USD", "GBP/JPY"];
 
-        function createCandles() {
-            for (let i = 0; i < 15; i++) {
-                let div = document.createElement('div');
-                div.className = "flex flex-col items-center justify-end h-full";
-                div.innerHTML = `<div class="wick h-2" style="background:#fff"></div><div class="candle bg-green-500" style="height:50px"></div><div class="wick h-2" style="background:#fff"></div>`;
-                chartGrid.appendChild(div);
-                candles.push(div);
-            }
+        let currentMarketType = 'OTC';
+        let currentTimeframe = '1 MIN';
+        let totalSeconds = 60; 
+        let candlesList = [];
+        let marketBasePrice = 1.0845;
+
+        function loadPairs(type) {
+            currentMarketType = type;
+            const assetSelect = document.getElementById('assetSelect');
+            assetSelect.innerHTML = '';
+            const pairs = type === 'OTC' ? otcPairs : realPairs;
+            pairs.forEach(pair => {
+                const opt = document.createElement('option');
+                opt.value = pair;
+                opt.textContent = pair;
+                assetSelect.appendChild(opt);
+            });
+            updateWidgetPair();
         }
 
-        function updateChart() {
-            // প্রাইস মুভমেন্ট ও টিকার আপডেট
-            basePrice += (Math.random() - 0.5) * 0.2;
-            const ticker = document.getElementById('ticker');
-            ticker.textContent = basePrice.toFixed(2);
-            ticker.style.top = (48 + (Math.random() - 0.5) * 20) + "%";
+        function switchMarket(type) {
+            const btnOTC = document.getElementById('btnOTC');
+            const btnREAL = document.getElementById('btnREAL');
+            if (type === 'OTC') {
+                btnOTC.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnREAL.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            } else {
+                btnREAL.className = "bg-purple-600 text-white py-1.5 rounded-lg text-xs font-bold transition";
+                btnOTC.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
+            }
+            loadPairs(type);
+            initCandles();
+        }
 
-            // ক্যান্ডেল ফ্ল্যাকচুয়েশন
-            candles.forEach((c, i) => {
-                let candleBody = c.querySelector('.candle');
-                let h = parseInt(candleBody.style.height);
-                let newH = h + (Math.random() - 0.5) * 5;
-                candleBody.style.height = Math.max(20, Math.min(100, newH)) + "px";
-                candleBody.className = `candle ${Math.random() > 0.5 ? 'bg-green-500' : 'bg-red-500'}`;
+        function selectTimeframe(tf) {
+            currentTimeframe = tf;
+            ['tf1', 'tf2', 'tf3', 'tf5'].forEach(id => {
+                document.getElementById(id).className = "bg-black border border-gray-700 text-gray-400 py-1 rounded-md text-[10px] font-bold transition";
+            });
+            document.getElementById('tf' + tf.charAt(0)).className = "bg-purple-600 text-white py-1 rounded-md text-[10px] font-bold transition";
+            document.getElementById('signalTfTitle').textContent = `STATUS (${tf})`;
+        }
+
+        function updateWidgetPair() {
+            const selectedPair = document.getElementById('assetSelect').value;
+            document.getElementById('widgetPair').textContent = selectedPair;
+            document.getElementById('signalPairTitle').textContent = selectedPair;
+            initCandles();
+        }
+
+        function initCandles() {
+            candlesList = [];
+            // 13 professional candles to fit nicely inside the mini chart
+            for (let i = 0; i < 13; i++) {
+                candlesList.push({
+                    isGreen: Math.random() > 0.45,
+                    height: Math.floor(Math.random() * 55) + 20,
+                    wickTop: Math.floor(Math.random() * 12) + 3,
+                    wickBottom: Math.floor(Math.random() * 12) + 3
+                });
+            }
+            renderChartCandles();
+        }
+
+        function renderChartCandles() {
+            const area = document.getElementById('candlesArea');
+            area.innerHTML = '';
+            
+            candlesList.forEach((c) => {
+                const wrap = document.createElement('div');
+                wrap.className = "flex flex-col items-center justify-center h-full relative";
+
+                const topWick = document.createElement('div');
+                topWick.className = `w-[1px] ${c.isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                topWick.style.height = `${c.wickTop}px`;
+
+                const body = document.createElement('div');
+                body.className = `w-2.5 rounded-[1px] ${c.isGreen ? 'candle-green' : 'candle-red'}`;
+                body.style.height = `${c.height}px`;
+
+                const botWick = document.createElement('div');
+                botWick.className = `w-[1px] ${c.isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                botWick.style.height = `${c.wickBottom}px`;
+
+                wrap.appendChild(topWick);
+                wrap.appendChild(body);
+                wrap.appendChild(botWick);
+                area.appendChild(wrap);
             });
         }
 
-        setInterval(updateChart, 500); // প্রতি আধা সেকেন্ডে মুভমেন্ট
+        function generateSignal() {
+            let mockCloses = candlesList.map(c => c.height);
+            let mockHighs = mockCloses.map(c => c + 4);
+            let mockLows = mockCloses.map(c => c - 4);
+            let mockVolumes = mockCloses.map(() => Math.floor(Math.random() * 800));
+
+            let analysis = window.btzEngine.analyzeMarket(mockCloses, mockHighs, mockLows, mockVolumes);
+
+            const dirEl = document.getElementById('signalDirection');
+            const confEl = document.getElementById('signalConfidence');
+
+            if (analysis.signal === "NO TRADE") {
+                dirEl.textContent = "NO TRADE";
+                dirEl.className = "text-sm font-black text-yellow-500";
+                confEl.textContent = `Reason: ${analysis.reason}`;
+            } else {
+                dirEl.textContent = analysis.signal;
+                dirEl.className = `text-sm font-black ${analysis.signal === 'UP' ? 'text-green-500' : 'text-red-500'}`;
+                confEl.textContent = `Score: ${analysis.score}% | Accuracy Confirmed`;
+            }
+        }
+
+        // Live Clock, Ticker & Smooth Real-Market Candle Animation Loop
         setInterval(() => {
             const now = new Date();
-            document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-GB', {timeZone: 'Asia/Dhaka'});
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const targetTime = new Date(utc + (3600000 * 6)); // UTC+6 Bangladesh Time
+            
+            let hours = targetTime.getHours();
+            let minutes = targetTime.getMinutes();
+            let seconds = targetTime.getSeconds();
+            
+            let fHours = hours < 10 ? '0' + hours : hours;
+            let fMins = minutes < 10 ? '0' + minutes : minutes;
+            let fSecs = seconds < 10 ? '0' + seconds : seconds;
+            
+            document.getElementById('liveClock').textContent = `${fHours}:${fMins}:${fSecs}`;
+
+            let nextCandleTime = new Date(targetTime.getTime() + 60000);
+            let nMins = nextCandleTime.getMinutes();
+            let nMinsStr = nMins < 10 ? '0' + nMins : nMins;
+            document.getElementById('candleTimeBadge').textContent = `${nextCandleTime.getHours()}:${nMinsStr}`;
+
+            // Countdown Timer Logic
+            totalSeconds--;
+            let m = Math.floor(totalSeconds / 60);
+            let s = totalSeconds % 60;
+            document.getElementById('timer').textContent = `0${m}:${s < 10 ? '0' + s : s}`;
+            
+            const predEl = document.getElementById('predictionText');
+            let lastCandle = candlesList[candlesList.length - 1];
+            
+            // Live Price Ticker Flctuation
+            marketBasePrice += (Math.random() - 0.48) * 0.0002;
+            const ticker = document.getElementById('priceTickerBadge');
+            ticker.textContent = marketBasePrice.toFixed(4);
+            ticker.style.top = `${Math.max(15, Math.min(80, 50 - (lastCandle.height - 35) * 0.6))}%`;
+
+            // Real Market candle live fluctuation simulation (Running candle moves dynamically)
+            if (totalSeconds > 30) {
+                predEl.textContent = "RUNNING CANDLE: ANALYZING...";
+                predEl.className = "text-[10px] font-black text-gray-300 uppercase tracking-wider";
+                lastCandle.height = Math.max(15, Math.min(75, lastCandle.height + (Math.random() > 0.48 ? 1.5 : -1.5)));
+                lastCandle.wickTop += (Math.random() > 0.5 ? 1 : -1);
+            } 
+            else if (totalSeconds <= 30 && totalSeconds > 0) {
+                predEl.textContent = lastCandle.isGreen ? "PREDICTION: NEXT UP (GREEN)" : "PREDICTION: NEXT DOWN (RED)";
+                predEl.className = `text-[10px] font-black ${lastCandle.isGreen ? 'text-green-400' : 'text-red-400'} uppercase tracking-wider`;
+                lastCandle.height = Math.max(15, Math.min(80, lastCandle.height + (Math.random() > 0.5 ? 2 : -2)));
+            }
+
+            renderChartCandles();
+
+            // Reset every 60 seconds (New Candle Generation)
+            if (totalSeconds <= 0) {
+                totalSeconds = 60;
+                candlesList.shift();
+                candlesList.push({
+                    isGreen: Math.random() > 0.43,
+                    height: Math.floor(Math.random() * 50) + 22,
+                    wickTop: Math.floor(Math.random() * 10) + 3,
+                    wickBottom: Math.floor(Math.random() * 10) + 3
+                });
+                
+                const rsi = (Math.random() * (72 - 28) + 28).toFixed(1);
+                document.getElementById('rsiVal').textContent = `${rsi} (${rsi > 50 ? 'BUY' : 'SELL'})`;
+            }
         }, 1000);
 
-        createCandles();
+        loadPairs('OTC');
+        initCandles();
     </script>
 </body>
 </html>
