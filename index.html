@@ -90,7 +90,7 @@
 
     </div>
 
-    <!-- Live Chart & AI Widget (Stable Pro Pre-view) -->
+    <!-- Live Chart & AI Widget with UTC+6 Live Clock -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/20">
         
         <div class="flex items-center justify-between border-b border-gray-800 pb-2">
@@ -101,15 +101,25 @@
             <span id="timer" class="text-[10px] font-mono text-yellow-400 font-bold">01:00</span>
         </div>
 
+        <!-- Added Live Market Time (UTC+6) section exactly where you marked in screenshot -->
         <div class="flex items-center justify-between text-[10px] bg-black/50 p-2 rounded-lg border border-gray-800">
             <div>
                 <span class="text-gray-400 block text-[8px]">PAIR & STATUS</span>
-                <span id="widgetPair" class="font-bold text-white">EUR/USD (OTC)</span>
-                <span class="bg-green-600 text-white text-[8px] px-1 ml-1 rounded font-bold">LIVE</span>
+                <div class="flex items-center space-x-1 mt-0.5">
+                    <span id="widgetPair" class="font-bold text-white">EUR/USD</span>
+                    <span class="bg-green-600 text-white text-[8px] px-1 rounded font-bold">LIVE</span>
+                </div>
             </div>
+            
+            <!-- Live Clock UTC+6 Display -->
+            <div class="text-center bg-black/80 px-2 py-1 rounded border border-purple-500/30">
+                <span id="liveClock" class="font-mono font-bold text-xs text-green-400 block">11:56:56</span>
+                <span class="text-[7px] text-gray-400 tracking-wider">UTC+6</span>
+            </div>
+
             <div class="text-right">
                 <span class="text-gray-400 block text-[8px]">ANALYSIS ENGINE</span>
-                <span class="font-bold text-purple-400">RSI + MACD + EMA</span>
+                <span class="font-bold text-purple-400">RSI + MACD</span>
             </div>
         </div>
 
@@ -128,7 +138,7 @@
         let currentMarketType = 'OTC';
         let currentTimeframe = '1 MIN';
         let totalSeconds = 60; 
-        let candleDataList = []; // স্থায়ী ক্যান্ডেল ডাটা সংরক্ষণের জন্য
+        let candleDataList = [];
 
         function loadPairs(type) {
             currentMarketType = type;
@@ -174,7 +184,6 @@
             initCandles();
         }
 
-        // প্রাথমিক ১৫টি ক্যান্ডেলের ডেটা জেনারেট করে মেমোরিতে সেভ করা
         function initCandles() {
             candleDataList = [];
             for (let i = 0; i < 15; i++) {
@@ -188,7 +197,6 @@
             drawChart();
         }
 
-        // চার্ট রেন্ডার করার ফাংশন
         function drawChart() {
             const chartGrid = document.getElementById('chartGrid');
             chartGrid.innerHTML = '';
@@ -216,7 +224,6 @@
             });
         }
 
-        // Integrated Engine Signal Generation Function
         function generateSignal() {
             let mockCloses = candleDataList.map(c => c.height);
             let mockHighs = mockCloses.map(c => c + 5);
@@ -239,23 +246,36 @@
             }
         }
 
-        // প্রতি সেকেন্ডে টাইমার এবং রানিং ক্যান্ডেল আপডেট লুপ (ফ্লিকারিং মুক্ত স্মুথ অ্যানিমেশন)
+        // Real-time UTC+6 clock and smooth candle loop
         setInterval(() => {
-            totalSeconds--;
+            // Live UTC+6 Clock update (Hour:Minute:Second)
+            const now = new Date();
+            // Adjusting to UTC+6 Bangladesh/Standard Time offset accurately
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const targetTime = new Date(utc + (3600000 * 6));
             
+            let hours = targetTime.getHours();
+            let minutes = targetTime.getMinutes();
+            let seconds = targetTime.getSeconds();
+            
+            hours = hours < 10 ? '0' + hours : hours;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            
+            document.getElementById('liveClock').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // Countdown timer & Candle update logic
+            totalSeconds--;
             let mins = Math.floor(totalSeconds / 60);
             let secs = totalSeconds % 60;
             document.getElementById('timer').textContent = `0${mins}:${secs < 10 ? '0' + secs : secs}`;
             
             const predEl = document.getElementById('predictionText');
-
-            // রানিং ক্যান্ডেলটি (শেষ ক্যান্ডেলটি) প্রতি সেকেন্ডে একটু একটু করে বড়/ছোট বা পরিবর্তন হবে
             let lastCandle = candleDataList[candleDataList.length - 1];
             
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
                 predEl.className = "text-[10px] font-black text-gray-400 uppercase tracking-wider";
-                // স্মুথলি হাইট সামান্য পরিবর্তন করা যাতে মনে হয় ক্যান্ডেলটি লাইভ চলছে
                 lastCandle.height = Math.max(20, Math.min(80, lastCandle.height + (Math.random() > 0.5 ? 2 : -2)));
             } 
             else if (totalSeconds <= 30 && totalSeconds > 0) {
@@ -265,11 +285,10 @@
                 lastCandle.height = Math.max(20, Math.min(85, lastCandle.height + (Math.random() > 0.5 ? 3 : -3)));
             }
 
-            drawChart(); // রি-ড্র করা যাতে আগের ক্যান্ডেলগুলো ফিক্সড থাকে এবং শুধু রানিং ক্যান্ডেলটা মুভ করে
+            drawChart();
 
             if (totalSeconds <= 0) {
                 totalSeconds = 60;
-                // নতুন ক্যান্ডেল শিফট করা (পুরনো ক্যান্ডেল বাদ দিয়ে নতুন ক্যান্ডেল যোগ করা)
                 candleDataList.shift();
                 candleDataList.push({
                     isGreen: Math.random() > 0.4,
@@ -278,14 +297,12 @@
                     wickBottom: Math.floor(Math.random() * 10) + 2
                 });
                 
-                // ডাইনামিক ইন্ডিকেটর আপডেট
                 const rsi = (Math.random() * (70 - 30) + 30).toFixed(1);
                 document.getElementById('rsiVal').textContent = `${rsi} (${rsi > 50 ? 'BUY' : 'SELL'})`;
-                document.getElementById('rsiVal').className = rsi > 50 ? "text-green-400" : "text-red-400";
+                document.getElementById('rsiVal5').className = rsi > 50 ? "text-green-400" : "text-red-400";
             }
         }, 1000);
 
-        // ইনিশিয়ালাইজেশন
         loadPairs('OTC');
         initCandles();
     </script>
