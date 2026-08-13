@@ -90,7 +90,7 @@
 
     </div>
 
-    <!-- Live Chart & AI Widget (30s Advance Pre-view) -->
+    <!-- Live Chart & AI Widget (Stable Pro Pre-view) -->
     <div class="w-full max-w-sm glass-card rounded-xl p-3 mt-3 shadow-xl space-y-2 border border-purple-500/20">
         
         <div class="flex items-center justify-between border-b border-gray-800 pb-2">
@@ -117,7 +117,7 @@
         <div id="chartGrid" class="chart-grid"></div>
 
         <div class="text-center bg-black/60 py-1.5 rounded-lg border border-gray-800">
-            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE (0-30s)...</span>
+            <span id="predictionText" class="text-[10px] font-black text-yellow-400 uppercase tracking-wider">RUNNING CANDLE...</span>
         </div>
     </div>
 
@@ -128,7 +128,7 @@
         let currentMarketType = 'OTC';
         let currentTimeframe = '1 MIN';
         let totalSeconds = 60; 
-        let nextCandleIsUp = true; 
+        let candleDataList = []; // স্থায়ী ক্যান্ডেল ডাটা সংরক্ষণের জন্য
 
         function loadPairs(type) {
             currentMarketType = type;
@@ -155,6 +155,7 @@
                 btnOTC.className = "bg-black border border-gray-700 text-gray-400 py-1.5 rounded-lg text-xs font-bold transition";
             }
             loadPairs(type);
+            initCandles();
         }
 
         function selectTimeframe(tf) {
@@ -170,55 +171,58 @@
             const selectedPair = document.getElementById('assetSelect').value;
             document.getElementById('widgetPair').textContent = selectedPair;
             document.getElementById('signalPairTitle').textContent = selectedPair;
+            initCandles();
         }
 
-        function renderChart(showAdvance, upDirection) {
+        // প্রাথমিক ১৫টি ক্যান্ডেলের ডেটা জেনারেট করে মেমোরিতে সেভ করা
+        function initCandles() {
+            candleDataList = [];
+            for (let i = 0; i < 15; i++) {
+                candleDataList.push({
+                    isGreen: Math.random() > 0.45,
+                    height: Math.floor(Math.random() * (65 - 25) + 25),
+                    wickTop: Math.floor(Math.random() * 10) + 2,
+                    wickBottom: Math.floor(Math.random() * 10) + 2
+                });
+            }
+            drawChart();
+        }
+
+        // চার্ট রেন্ডার করার ফাংশন
+        function drawChart() {
             const chartGrid = document.getElementById('chartGrid');
             chartGrid.innerHTML = '';
             
-            for (let i = 0; i < 15; i++) {
-                let isGreen;
-                if (i === 14 && showAdvance) {
-                    isGreen = upDirection;
-                } else {
-                    isGreen = Math.random() > 0.43;
-                }
-
-                const bodyHeight = Math.floor(Math.random() * (70 - 25) + 25);
-                const wickTop = Math.floor(Math.random() * 12) + 2;
-                const wickBottom = Math.floor(Math.random() * 12) + 2;
-
+            candleDataList.forEach((candle, index) => {
                 const candleWrapper = document.createElement('div');
                 candleWrapper.className = "relative flex flex-col items-center justify-center";
 
                 const topWick = document.createElement('div');
-                topWick.className = `w-[1px] ${isGreen ? 'bg-green-400' : 'bg-red-400'}`;
-                topWick.style.height = `${wickTop}px`;
+                topWick.className = `w-[1px] ${candle.isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                topWick.style.height = `${candle.wickTop}px`;
 
                 const body = document.createElement('div');
-                body.className = `w-3 rounded-[2px] ${isGreen ? 'candle-green' : 'candle-red'}`;
-                body.style.height = `${bodyHeight}px`;
+                body.className = `w-3 rounded-[2px] ${candle.isGreen ? 'candle-green' : 'candle-red'}`;
+                body.style.height = `${candle.height}px`;
 
                 const bottomWick = document.createElement('div');
-                bottomWick.className = `w-[1px] ${isGreen ? 'bg-green-400' : 'bg-red-400'}`;
-                bottomWick.style.height = `${wickBottom}px`;
+                bottomWick.className = `w-[1px] ${candle.isGreen ? 'bg-green-400' : 'bg-red-400'}`;
+                bottomWick.style.height = `${candle.wickBottom}px`;
 
                 candleWrapper.appendChild(topWick);
                 candleWrapper.appendChild(body);
                 candleWrapper.appendChild(bottomWick);
                 chartGrid.appendChild(candleWrapper);
-            }
+            });
         }
 
         // Integrated Engine Signal Generation Function
         function generateSignal() {
-            // Generate simulated price arrays for engine analysis
-            let mockCloses = [1.1200, 1.1210, 1.1205, 1.1220, 1.1215, 1.1230, 1.1225, 1.1240, 1.1235, 1.1250, 1.1245, 1.1260, 1.1255, 1.1270, 1.1265, 1.1280];
-            let mockHighs = mockCloses.map(c => c + 0.0005);
-            let mockLows = mockCloses.map(c => c - 0.0005);
+            let mockCloses = candleDataList.map(c => c.height);
+            let mockHighs = mockCloses.map(c => c + 5);
+            let mockLows = mockCloses.map(c => c - 5);
             let mockVolumes = mockCloses.map(() => Math.floor(Math.random() * 1000));
 
-            // Call btzEngine analysis
             let analysis = window.btzEngine.analyzeMarket(mockCloses, mockHighs, mockLows, mockVolumes);
 
             const dirEl = document.getElementById('signalDirection');
@@ -235,7 +239,7 @@
             }
         }
 
-        // Timer and Indicator Simulation Loop
+        // প্রতি সেকেন্ডে টাইমার এবং রানিং ক্যান্ডেল আপডেট লুপ (ফ্লিকারিং মুক্ত স্মুথ অ্যানিমেশন)
         setInterval(() => {
             totalSeconds--;
             
@@ -245,32 +249,45 @@
             
             const predEl = document.getElementById('predictionText');
 
+            // রানিং ক্যান্ডেলটি (শেষ ক্যান্ডেলটি) প্রতি সেকেন্ডে একটু একটু করে বড়/ছোট বা পরিবর্তন হবে
+            let lastCandle = candleDataList[candleDataList.length - 1];
+            
             if (totalSeconds > 30) {
                 predEl.textContent = "RUNNING CANDLE: ANALYZING...";
                 predEl.className = "text-[10px] font-black text-gray-400 uppercase tracking-wider";
-                renderChart(false, nextCandleIsUp);
+                // স্মুথলি হাইট সামান্য পরিবর্তন করা যাতে মনে হয় ক্যান্ডেলটি লাইভ চলছে
+                lastCandle.height = Math.max(20, Math.min(80, lastCandle.height + (Math.random() > 0.5 ? 2 : -2)));
             } 
             else if (totalSeconds <= 30 && totalSeconds > 0) {
-                predEl.textContent = nextCandleIsUp ? "30S ADVANCE: NEXT UP (GREEN)" : "30S ADVANCE: NEXT DOWN (RED)";
-                predEl.className = `text-[10px] font-black ${nextCandleIsUp ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
+                predEl.textContent = lastCandle.isGreen ? "30S PREDICTION: NEXT UP (GREEN)" : "30S PREDICTION: NEXT DOWN (RED)";
+                predEl.className = `text-[10px] font-black ${lastCandle.isGreen ? 'text-green-500' : 'text-red-500'} uppercase tracking-wider`;
                 
-                renderChart(true, nextCandleIsUp);
+                lastCandle.height = Math.max(20, Math.min(85, lastCandle.height + (Math.random() > 0.5 ? 3 : -3)));
             }
+
+            drawChart(); // রি-ড্র করা যাতে আগের ক্যান্ডেলগুলো ফিক্সড থাকে এবং শুধু রানিং ক্যান্ডেলটা মুভ করে
 
             if (totalSeconds <= 0) {
                 totalSeconds = 60;
-                nextCandleIsUp = Math.random() > 0.35; 
+                // নতুন ক্যান্ডেল শিফট করা (পুরনো ক্যান্ডেল বাদ দিয়ে নতুন ক্যান্ডেল যোগ করা)
+                candleDataList.shift();
+                candleDataList.push({
+                    isGreen: Math.random() > 0.4,
+                    height: Math.floor(Math.random() * (60 - 25) + 25),
+                    wickTop: Math.floor(Math.random() * 10) + 2,
+                    wickBottom: Math.floor(Math.random() * 10) + 2
+                });
                 
-                // Dynamic Indicator Updates from Engine calculations
+                // ডাইনামিক ইন্ডিকেটর আপডেট
                 const rsi = (Math.random() * (70 - 30) + 30).toFixed(1);
                 document.getElementById('rsiVal').textContent = `${rsi} (${rsi > 50 ? 'BUY' : 'SELL'})`;
                 document.getElementById('rsiVal').className = rsi > 50 ? "text-green-400" : "text-red-400";
             }
         }, 1000);
 
+        // ইনিশিয়ালাইজেশন
         loadPairs('OTC');
-        nextCandleIsUp = Math.random() > 0.35;
-        renderChart(false, nextCandleIsUp);
+        initCandles();
     </script>
 </body>
 </html>
