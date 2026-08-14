@@ -1,145 +1,369 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finorix Pro - Real Live Growth Chart</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #0b0e14; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        .finorix-widget {
-            background: #121824;
-            border: 1px solid #2a3447;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
-            border-radius: 14px;
-            width: 100%;
-            max-width: 330px;
-        }
-        .chart-container {
-            background: #070a10;
-            border: 1px solid #1e2636;
-            border-radius: 8px;
-            height: 150px;
-            position: relative;
-            overflow: hidden;
-        }
-        .candle-green { background: #0faf59; box-shadow: 0 0 6px rgba(15,175,89,0.5); }
-        .candle-red { background: #ff4757; box-shadow: 0 0 6px rgba(255,71,87,0.5); }
-        .grid-line {
-            position: absolute; left: 0; right: 0; height: 1px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.05);
-        }
-    </style>
-</head>
-<body class="flex justify-center items-center h-screen p-3">
+<!-- FINORIX AI MINI LIVE MARKET -->
+<div class="finorix-market">
 
-    <div class="finorix-widget p-3.5 space-y-3">
-        
-        <!-- Header -->
-        <div class="flex justify-between items-center border-b border-gray-800 pb-2.5">
-            <div class="flex items-center space-x-1.5">
-                <span class="bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded text-white tracking-wider">FINORIX</span>
-                <span class="text-[8px] text-gray-400 font-semibold">RAPI SOFTWARE</span>
-            </div>
-            <div class="flex items-center space-x-1 bg-black/50 px-2 py-0.5 rounded border border-gray-800">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                <span class="text-[8px] text-green-400 font-bold">Autoconnect</span>
-            </div>
-        </div>
-
-        <!-- Pair Selector -->
-        <div class="bg-black/60 border border-gray-800 rounded-lg p-2.5 flex justify-between items-center cursor-pointer hover:border-purple-500 transition-all">
-            <div class="flex items-center space-x-2">
-                <span class="text-sm">📈</span>
-                <div>
-                    <p class="text-[11px] font-bold text-gray-100">EUR/NZD (OTC) 1m</p>
-                    <p class="text-[8px] text-gray-400">763.5487.8685</p>
-                </div>
-            </div>
-            <span class="text-gray-400 text-xs">▼</span>
-        </div>
-
-        <!-- Chart Screen with Real Growing Candles & Wicks -->
-        <div class="chart-container flex items-center justify-between px-2.5">
-            <div class="grid-line" style="top: 25%;"></div>
-            <div class="grid-line" style="top: 50%;"></div>
-            <div class="grid-line" style="top: 75%;"></div>
-            
-            <!-- Past Stable Candles -->
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:6px;" class="w-[1px] bg-red-500"></div><div class="candle-red w-2 h-10 rounded-sm"></div><div style="height:5px;" class="w-[1px] bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:4px;" class="w-[1px] bg-green-500"></div><div class="candle-green w-2 h-14 rounded-sm"></div><div style="height:7px;" class="w-[1px] bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:8px;" class="w-[1px] bg-red-500"></div><div class="candle-red w-2 h-8 rounded-sm"></div><div style="height:4px;" class="w-[1px] bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:5px;" class="w-[1px] bg-green-500"></div><div class="candle-green w-2 h-16 rounded-sm"></div><div style="height:6px;" class="w-[1px] bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:3px;" class="w-[1px] bg-red-500"></div><div class="candle-red w-2 h-12 rounded-sm"></div><div style="height:5px;" class="w-[1px] bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:6px;" class="w-[1px] bg-green-500"></div><div class="candle-green w-2 h-18 rounded-sm"></div><div style="height:3px;" class="w-[1px] bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="height:4px;" class="w-[1px] bg-red-500"></div><div class="candle-red w-2 h-10 rounded-sm"></div><div style="height:6px;" class="w-[1px] bg-red-500"></div></div>
-
-            <!-- LIVE GROWING CANDLE (The Last Active One) -->
-            <div class="flex flex-col items-center justify-center h-full w-3.5">
-                <div id="liveTopWick" style="height: 6px;" class="w-[1px] bg-green-500 transition-all duration-300"></div>
-                <div id="liveBody" class="candle-green w-2 h-12 rounded-sm transition-all duration-300"></div>
-                <div id="liveBottomWick" style="height: 4px;" class="w-[1px] bg-green-500 transition-all duration-300"></div>
-            </div>
-        </div>
-
-        <!-- Bottom Panel -->
-        <div class="grid grid-cols-2 gap-2.5 pt-1">
-            <div class="bg-black/60 border border-gray-800 p-2 rounded-lg text-center">
-                <span class="text-[8px] text-gray-400 block tracking-wider">PENDING TRADE</span>
-                <span class="text-xs font-bold text-blue-400 font-mono">300 $</span>
-            </div>
-            <div class="bg-black/60 border border-gray-800 p-2 rounded-lg text-center">
-                <span class="text-[8px] text-gray-400 block tracking-wider">SIGNAL STATUS</span>
-                <span id="signalText" class="text-xs font-black text-green-400 tracking-wide">NEXT UP</span>
-            </div>
-        </div>
-
+  <div class="finorix-header">
+    <div>
+      <div class="finorix-title">Finorix AI Market</div>
+      <div class="finorix-pair">
+        🇦🇷 USD/ARS (OTC)
+        <span class="live-dot"></span>
+        LIVE
+      </div>
     </div>
 
-    <script>
-        // Live Candle Formation Simulation (Wicks and Body growing naturally like real market)
-        setInterval(() => {
-            const body = document.getElementById('liveBody');
-            const topWick = document.getElementById('liveTopWick');
-            const bottomWick = document.getElementById('liveBottomWick');
+    <div class="timeframe">1m</div>
+  </div>
 
-            if(body && topWick && bottomWick) {
-                // Randomly decide if current live candle is Green or Red
-                const isGreen = Math.random() > 0.45;
-                
-                // Random heights for body and wicks simulating live price action
-                const bodyHeight = Math.floor(Math.random() * 20) + 10; // 10px to 30px
-                const topWickHeight = Math.floor(Math.random() * 12) + 2;   // 2px to 14px
-                const bottomWickHeight = Math.floor(Math.random() * 12) + 2; // 2px to 14px
+  <div class="chart-wrap">
 
-                // Apply styles based on trend
-                if(isGreen) {
-                    body.className = "candle-green w-2 rounded-sm transition-all duration-300";
-                    topWick.className = "w-[1px] bg-green-500 transition-all duration-300";
-                    bottomWick.className = "w-[1px] bg-green-500 transition-all duration-300";
-                } else {
-                    body.className = "candle-red w-2 rounded-sm transition-all duration-300";
-                    topWick.className = "w-[1px] bg-red-500 transition-all duration-300";
-                    bottomWick.className = "w-[1px] bg-red-500 transition-all duration-300";
-                }
+    <div id="priceChart"></div>
 
-                body.style.height = bodyHeight + 'px';
-                topWick.style.height = topWickHeight + 'px';
-                bottomWick.style.height = bottomWickHeight + 'px';
-            }
-        }, 1200); // Every 1.2 seconds the live candle updates and grows smoothly
+    <!-- Current price -->
+    <div id="currentPrice" class="current-price">
+      1460.14
+    </div>
 
-        // Signal Status Switcher
-        setInterval(() => {
-            const sig = document.getElementById('signalText');
-            if(Math.random() > 0.5) {
-                sig.textContent = "NEXT UP";
-                sig.className = "text-xs font-black text-green-400 tracking-wide";
-            } else {
-                sig.textContent = "NEXT DOWN";
-                sig.className = "text-xs font-black text-red-400 tracking-wide";
-            }
-        }, 4000);
-    </script>
-</body>
-</html>
+    <!-- Future candle marker -->
+    <div class="future-marker">
+      <span>ADVANCE</span>
+    </div>
+
+  </div>
+
+  <div class="finorix-footer">
+
+    <div>
+      <span class="signal-label">AI SIGNAL</span>
+      <span id="signal" class="signal-up">UP</span>
+    </div>
+
+    <div id="confidence" class="confidence">
+      86%
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- Lightweight Charts -->
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+
+.finorix-market {
+  width: 100%;
+  max-width: 360px;
+  background: #070a10;
+  border: 1px solid #242b38;
+  border-radius: 15px;
+  overflow: hidden;
+  color: white;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 12px 35px rgba(0,0,0,.45);
+}
+
+.finorix-header {
+  height: 58px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0b0f17;
+  border-bottom: 1px solid #1d2430;
+}
+
+.finorix-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.finorix-pair {
+  margin-top: 5px;
+  font-size: 12px;
+  color: #b8bec9;
+}
+
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 5px;
+  margin-right: 3px;
+  border-radius: 50%;
+  background: #22e28a;
+  box-shadow: 0 0 8px #22e28a;
+}
+
+.timeframe {
+  padding: 6px 10px;
+  border-radius: 7px;
+  background: #151b25;
+  font-size: 12px;
+  color: #d9dce3;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  background: #080c13;
+}
+
+#priceChart {
+  width: 100%;
+  height: 100%;
+}
+
+.current-price {
+  position: absolute;
+  right: 4px;
+  top: 48%;
+  background: #148ee8;
+  color: white;
+  padding: 5px 8px;
+  border-radius: 5px 0 0 5px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 5;
+}
+
+.future-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 72px;
+  width: 1px;
+  border-left: 1px dashed rgba(255,255,255,.45);
+  pointer-events: none;
+}
+
+.future-marker span {
+  position: absolute;
+  top: 8px;
+  left: -29px;
+  font-size: 8px;
+  color: #9da5b2;
+  white-space: nowrap;
+}
+
+.finorix-footer {
+  height: 43px;
+  padding: 0 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #0b0f17;
+  border-top: 1px solid #1d2430;
+}
+
+.signal-label {
+  color: #777f8d;
+  font-size: 9px;
+  margin-right: 5px;
+}
+
+.signal-up {
+  color: #16e88a;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.signal-down {
+  color: #ff4c5b;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.confidence {
+  color: #f4bd38;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+</style>
+
+
+<script>
+
+const chartElement = document.getElementById("priceChart");
+
+const chart = LightweightCharts.createChart(chartElement, {
+
+  layout: {
+    background: {
+      color: "#080c13"
+    },
+    textColor: "#8c95a5"
+  },
+
+  grid: {
+    vertLines: {
+      color: "rgba(255,255,255,0.06)"
+    },
+    horzLines: {
+      color: "rgba(255,255,255,0.06)"
+    }
+  },
+
+  rightPriceScale: {
+    borderColor: "rgba(255,255,255,0.12)"
+  },
+
+  timeScale: {
+    borderColor: "rgba(255,255,255,0.12)",
+    timeVisible: true,
+    secondsVisible: false
+  },
+
+  crosshair: {
+    mode: LightweightCharts.CrosshairMode.Normal
+  },
+
+  width: chartElement.clientWidth,
+  height: chartElement.clientHeight
+});
+
+
+const candleSeries = chart.addCandlestickSeries({
+
+  upColor: "#16d878",
+  downColor: "#ff4b3e",
+
+  borderUpColor: "#16d878",
+  borderDownColor: "#ff4b3e",
+
+  wickUpColor: "#16d878",
+  wickDownColor: "#ff4b3e"
+});
+
+
+/*
+   Initial market candles
+*/
+
+let candles = [
+
+  {time: 1710000000, open:1460.02, high:1460.12, low:1459.94, close:1460.08},
+
+  {time: 1710000060, open:1460.08, high:1460.25, low:1460.02, close:1460.20},
+
+  {time: 1710000120, open:1460.20, high:1460.31, low:1460.12, close:1460.27},
+
+  {time: 1710000180, open:1460.27, high:1460.29, low:1460.05, close:1460.11},
+
+  {time: 1710000240, open:1460.11, high:1460.22, low:1459.98, close:1460.04},
+
+  {time: 1710000300, open:1460.04, high:1460.18, low:1459.91, close:1459.97},
+
+  {time: 1710000360, open:1459.97, high:1460.10, low:1459.88, close:1460.06},
+
+  {time: 1710000420, open:1460.06, high:1460.35, low:1460.01, close:1460.28},
+
+  {time: 1710000480, open:1460.28, high:1460.44, low:1460.19, close:1460.36},
+
+  {time: 1710000540, open:1460.36, high:1460.41, low:1460.08, close:1460.14}
+
+];
+
+candleSeries.setData(candles);
+
+
+/*
+   Current live candle
+*/
+
+let currentCandle = {
+
+  time: 1710000600,
+
+  open: 1460.14,
+
+  high: 1460.14,
+
+  low: 1460.14,
+
+  close: 1460.14
+
+};
+
+candleSeries.update(currentCandle);
+
+
+/*
+   Simulated live price movement
+
+   Later this section can be replaced
+   with real OTC WebSocket/API data.
+*/
+
+let price = 1460.14;
+
+setInterval(() => {
+
+  const movement =
+    (Math.random() - 0.48) * 0.08;
+
+  price += movement;
+
+  currentCandle.close = price;
+
+  if (price > currentCandle.high)
+    currentCandle.high = price;
+
+  if (price < currentCandle.low)
+    currentCandle.low = price;
+
+  candleSeries.update(currentCandle);
+
+  document.getElementById("currentPrice")
+    .innerText = price.toFixed(2);
+
+}, 1000);
+
+
+/*
+   Create a new 1-minute candle
+*/
+
+setInterval(() => {
+
+  const newTime =
+    currentCandle.time + 60;
+
+  currentCandle = {
+
+    time: newTime,
+
+    open: price,
+
+    high: price,
+
+    low: price,
+
+    close: price
+
+  };
+
+  candleSeries.update(currentCandle);
+
+}, 60000);
+
+
+/*
+   Responsive chart
+*/
+
+window.addEventListener("resize", () => {
+
+  chart.applyOptions({
+
+    width: chartElement.clientWidth,
+
+    height: chartElement.clientHeight
+
+  });
+
+});
+
+</script>
