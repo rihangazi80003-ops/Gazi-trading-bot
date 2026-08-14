@@ -1,715 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finorix AI Market Pro</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #070a10; font-family: Arial, Helvetica, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        .finorix {
+            width: 100%;
+            max-width: 350px;
+            background: #080b12;
+            color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #252b37;
+            box-shadow: 0 15px 45px rgba(0,0,0,.5);
+        }
 
-<title>Finorix AI Market</title>
+        /* HEADER */
+        .header {
+            height: 55px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0d111a;
+            border-bottom: 1px solid #202633;
+        }
+        .title { font-size: 14px; font-weight: 700; }
+        .market { margin-top: 3px; font-size: 11px; color: #b7becb; display: flex; align-items: center; }
+        .live { color: #19e58b; margin-left: 4px; font-weight: bold; }
+        .live-dot {
+            display: inline-block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #18e88a;
+            box-shadow: 0 0 8px #18e88a;
+            margin-right: 5px;
+        }
+        .tf { padding: 5px 10px; border-radius: 6px; background: #171d28; color: #dce2eb; font-size: 11px; }
 
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+        /* CHART */
+        .chart-area {
+            position: relative;
+            width: 100%;
+            height: 240px;
+            background: #080b12;
+        }
+        #chart { width: 100%; height: 100%; }
 
-<style>
+        /* CURRENT PRICE LABEL */
+        .price-label {
+            position: absolute;
+            right: 0;
+            top: 45%;
+            padding: 4px 8px;
+            background: #178de5;
+            border-radius: 4px 0 0 4px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 20;
+        }
 
-* {
-    box-sizing: border-box;
-}
+        /* ADVANCE LINE */
+        .advance-line {
+            position: absolute;
+            top: 0; bottom: 0;
+            right: 70px;
+            border-left: 1px dashed rgba(255,255,255,0.4);
+            pointer-events: none;
+            z-index: 10;
+        }
+        .advance-text {
+            position: absolute;
+            top: 8px;
+            left: -28px;
+            font-size: 8px;
+            color: #adb5c2;
+            letter-spacing: 0.5px;
+        }
 
-body {
-    margin: 0;
-    background: #ffffff;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-.finorix {
-    width: 100%;
-    max-width: 480px;
-    margin: 25px auto;
-    background: #080b12;
-    color: white;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid #252b37;
-    box-shadow: 0 15px 45px rgba(0,0,0,.35);
-}
-
-/* HEADER */
-
-.header {
-    height: 62px;
-    padding: 10px 14px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    background: #0d111a;
-    border-bottom: 1px solid #202633;
-}
-
-.title {
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.market {
-    margin-top: 5px;
-    font-size: 12px;
-    color: #b7becb;
-}
-
-.live {
-    color: #19e58b;
-    margin-left: 4px;
-}
-
-.live-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #18e88a;
-    box-shadow: 0 0 9px #18e88a;
-    margin-right: 4px;
-}
-
-.tf {
-    padding: 7px 11px;
-    border-radius: 7px;
-    background: #171d28;
-    color: #dce2eb;
-    font-size: 12px;
-}
-
-/* CHART */
-
-.chart-area {
-    position: relative;
-    width: 100%;
-    height: 300px;
-    background: #080b12;
-}
-
-#chart {
-    width: 100%;
-    height: 100%;
-}
-
-/* CURRENT PRICE */
-
-.price-label {
-    position: absolute;
-
-    right: 0;
-    top: 48%;
-
-    padding: 5px 9px;
-
-    background: #178de5;
-
-    border-radius: 5px 0 0 5px;
-
-    font-size: 11px;
-    font-weight: bold;
-
-    z-index: 20;
-}
-
-/* CURRENT CANDLE LINE */
-
-.current-line {
-    position: absolute;
-
-    left: 0;
-    right: 0;
-
-    top: 50%;
-
-    border-top: 1px dashed
-        rgba(255,255,255,.55);
-
-    pointer-events: none;
-}
-
-/* ADVANCE LINE */
-
-.advance-line {
-
-    position: absolute;
-
-    top: 0;
-    bottom: 0;
-
-    right: 75px;
-
-    border-left: 1px dashed
-        rgba(255,255,255,.65);
-
-    pointer-events: none;
-
-    z-index: 10;
-}
-
-.advance-text {
-
-    position: absolute;
-
-    top: 10px;
-
-    left: -32px;
-
-    font-size: 8px;
-
-    color: #adb5c2;
-
-    white-space: nowrap;
-}
-
-/* FOOTER */
-
-.footer {
-
-    height: 48px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 0 14px;
-
-    background: #0d111a;
-
-    border-top: 1px solid #202633;
-}
-
-.signal-title {
-    color: #737d8d;
-    font-size: 9px;
-}
-
-.signal {
-    font-size: 13px;
-    font-weight: bold;
-    margin-left: 6px;
-}
-
-.up {
-    color: #18e88a;
-}
-
-.down {
-    color: #ff4d5c;
-}
-
-.confidence {
-    color: #ffc928;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-</style>
+        /* FOOTER */
+        .footer {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            background: #0d111a;
+            border-top: 1px solid #202633;
+        }
+        .signal-title { color: #737d8d; font-size: 9px; display: block; }
+        .signal { font-size: 12px; font-weight: bold; }
+        .up { color: #18e88a; }
+        .down { color: #ff4d5c; }
+        .confidence { color: #ffc928; font-size: 13px; font-weight: bold; }
+    </style>
 </head>
-
-
 <body>
 
-
 <div class="finorix">
-
     <!-- HEADER -->
-
     <div class="header">
-
         <div>
-
-            <div class="title">
-                Finorix AI Market
-            </div>
-
+            <div class="title">Finorix AI Market</div>
             <div class="market">
-
-                🇦🇷 USD/ARS (OTC)
-
-                <span class="live-dot"></span>
-
-                <span class="live">
-                    LIVE
-                </span>
-
+                <span class="live-dot"></span> USD/ARS (OTC) <span class="live">LIVE</span>
             </div>
-
         </div>
-
-
-        <div class="tf">
-            1m
-        </div>
-
+        <div class="tf">1m</div>
     </div>
-
 
     <!-- CHART -->
-
     <div class="chart-area">
-
         <div id="chart"></div>
-
-        <div class="current-line"></div>
-
         <div class="advance-line">
-
-            <span class="advance-text">
-                ADVANCE
-            </span>
-
+            <span class="advance-text">ADVANCE</span>
         </div>
-
-        <div id="price"
-             class="price-label">
-            1460.14
-        </div>
-
+        <div id="price" class="price-label">1460.14</div>
     </div>
-
 
     <!-- FOOTER -->
-
     <div class="footer">
-
         <div>
-
-            <span class="signal-title">
-                AI SIGNAL
-            </span>
-
-            <span id="signal"
-                  class="signal up">
-                UP
-            </span>
-
+            <span class="signal-title">AI SIGNAL</span>
+            <span id="signal" class="signal up">UP</span>
         </div>
-
-
-        <div id="confidence"
-             class="confidence">
-
-            86%
-
+        <div>
+            <span class="signal-title">CONFIDENCE</span>
+            <span id="confidence" class="confidence">86%</span>
         </div>
-
     </div>
-
 </div>
 
-
 <script>
+    const container = document.getElementById("chart");
 
-/* =====================================================
-   FINORIX LIVE CANDLE ENGINE
-   ===================================================== */
-
-
-/* CHART */
-
-const container =
-    document.getElementById("chart");
-
-
-const chart =
-    LightweightCharts.createChart(
-        container,
-        {
-
-            width: container.clientWidth,
-
-            height: container.clientHeight,
-
-            layout: {
-
-                background: {
-                    color: "#080b12"
-                },
-
-                textColor: "#8993a4"
-
-            },
-
-            grid: {
-
-                vertLines: {
-                    color:
-                    "rgba(255,255,255,0.055)"
-                },
-
-                horzLines: {
-                    color:
-                    "rgba(255,255,255,0.055)"
-                }
-
-            },
-
-            rightPriceScale: {
-
-                borderColor:
-                "rgba(255,255,255,.12)",
-
-                scaleMargins: {
-
-                    top: 0.12,
-
-                    bottom: 0.12
-
-                }
-
-            },
-
-            timeScale: {
-
-                borderColor:
-                "rgba(255,255,255,.12)",
-
-                timeVisible: true,
-
-                secondsVisible: false,
-
-                rightOffset: 3,
-
-                barSpacing: 10
-
-            },
-
-            crosshair: {
-
-                mode:
-                LightweightCharts.CrosshairMode.Normal
-
-            }
-
+    const chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: {
+            background: { color: "#080b12" },
+            textColor: "#8993a4"
+        },
+        grid: {
+            vertLines: { color: "rgba(255,255,255,0.04)" },
+            horzLines: { color: "rgba(255,255,255,0.04)" }
+        },
+        rightPriceScale: {
+            borderColor: "rgba(255,255,255,.1)",
+            scaleMargins: { top: 0.15, bottom: 0.15 }
+        },
+        timeScale: {
+            borderColor: "rgba(255,255,255,.1)",
+            timeVisible: true,
+            secondsVisible: false,
+            rightOffset: 4,
+            barSpacing: 10
         }
-    );
+    });
 
-
-/* CANDLE SERIES */
-
-const candles =
-    chart.addCandlestickSeries({
-
+    const candles = chart.addCandlestickSeries({
         upColor: "#18d879",
-
         downColor: "#ff4b3e",
-
         borderUpColor: "#18d879",
-
         borderDownColor: "#ff4b3e",
-
         wickUpColor: "#18d879",
-
         wickDownColor: "#ff4b3e"
-
     });
 
+    const now = Math.floor(Date.now() / 60000) * 60;
+    let price = 1460.14;
+    let data = [];
+    let p = 1459.60;
 
-/* =====================================================
-   INITIAL MARKET DATA
-   ===================================================== */
+    // Historical Candles Generator
+    for (let i = 35; i >= 1; i--) {
+        const time = now - (i * 60);
+        const open = p;
+        const movement = (Math.random() - 0.48) * 0.20;
+        const close = open + movement;
+        const high = Math.max(open, close) + Math.random() * 0.08;
+        const low = Math.min(open, close) - Math.random() * 0.08;
 
-const now =
-    Math.floor(Date.now() / 60000) * 60;
-
-
-/*
-   Starting price
-*/
-
-let price = 1460.14;
-
-
-/*
-   Generate historical candles
-*/
-
-let data = [];
-
-let p = 1459.60;
-
-
-for (let i = 35; i >= 1; i--) {
-
-    const time =
-        now - (i * 60);
-
-    const open = p;
-
-    const movement =
-        (Math.random() - 0.48) * 0.20;
-
-    const close =
-        open + movement;
-
-    const high =
-        Math.max(open, close)
-        + Math.random() * 0.08;
-
-    const low =
-        Math.min(open, close)
-        - Math.random() * 0.08;
-
-
-    data.push({
-
-        time: time,
-
-        open: Number(open.toFixed(3)),
-
-        high: Number(high.toFixed(3)),
-
-        low: Number(low.toFixed(3)),
-
-        close: Number(close.toFixed(3))
-
-    });
-
-
-    p = close;
-}
-
-
-/*
-   Put candles into chart
-*/
-
-candles.setData(data);
-
-
-/* =====================================================
-   CURRENT 1-MINUTE CANDLE
-   ===================================================== */
-
-let currentTime = now;
-
-let current = {
-
-    time: currentTime,
-
-    open: p,
-
-    high: p,
-
-    low: p,
-
-    close: p
-
-};
-
-
-/*
-   Add current candle
-*/
-
-candles.update(current);
-
-
-/* =====================================================
-   LIVE TICK ENGINE
-   ===================================================== */
-
-setInterval(() => {
-
-
-    /*
-       Random market tick
-
-       This is only a demo feed.
-       Replace this later with real
-       Quotex-compatible data.
-    */
-
-    const movement =
-        (Math.random() - 0.49) * 0.035;
-
-
-    price += movement;
-
-
-    /*
-       Keep price realistic
-    */
-
-    price =
-        Number(price.toFixed(3));
-
-
-    /*
-       Update candle
-    */
-
-    current.close = price;
-
-
-    if (price > current.high) {
-
-        current.high = price;
-
+        data.push({
+            time: time,
+            open: Number(open.toFixed(3)),
+            high: Number(high.toFixed(3)),
+            low: Number(low.toFixed(3)),
+            close: Number(close.toFixed(3))
+        });
+        p = close;
     }
 
+    candles.setData(data);
 
-    if (price < current.low) {
-
-        current.low = price;
-
-    }
-
-
-    /*
-       Send candle update
-    */
-
-    candles.update(current);
-
-
-    /*
-       Update price label
-    */
-
-    document
-        .getElementById("price")
-        .innerText =
-        price.toFixed(2);
-
-
-}, 1000);
-
-
-/* =====================================================
-   NEW CANDLE EVERY 60 SECONDS
-   ===================================================== */
-
-setInterval(() => {
-
-
-    /*
-       Move to next minute
-    */
-
-    currentTime += 60;
-
-
-    /*
-       New candle starts
-       from previous close
-    */
-
-    current = {
-
+    let currentTime = now;
+    let current = {
         time: currentTime,
-
-        open: price,
-
-        high: price,
-
-        low: price,
-
-        close: price
-
+        open: p,
+        high: p,
+        low: p,
+        close: p
     };
 
-
     candles.update(current);
 
+    // Live Tick Engine (Real-time candle fluctuation)
+    setInterval(() => {
+        const movement = (Math.random() - 0.49) * 0.035;
+        price += movement;
+        price = Number(price.toFixed(3));
 
-}, 60000);
+        current.close = price;
+        if (price > current.high) current.high = price;
+        if (price < current.low) current.low = price;
 
+        candles.update(current);
+        document.getElementById("price").innerText = price.toFixed(2);
+    }, 1000);
 
-/* =====================================================
-   DEMO AI SIGNAL
-   ===================================================== */
+    // New Candle every 60 seconds
+    setInterval(() => {
+        currentTime += 60;
+        current = {
+            time: currentTime,
+            open: price,
+            high: price,
+            low: price,
+            close: price
+        };
+        candles.update(current);
+    }, 60000);
 
-setInterval(() => {
+    // AI Signal & Confidence Switcher
+    setInterval(() => {
+        const signal = document.getElementById("signal");
+        const confidence = document.getElementById("confidence");
+        
+        const isUp = Math.random() > 0.45;
+        if (isUp) {
+            signal.innerText = "UP";
+            signal.className = "signal up";
+        } else {
+            signal.innerText = "DOWN";
+            signal.className = "signal down";
+        }
 
+        const value = Math.floor(78 + Math.random() * 15);
+        confidence.innerText = value + "%";
+    }, 10000);
 
-    const signal =
-        document.getElementById("signal");
-
-
-    const confidence =
-        document.getElementById("confidence");
-
-
-    /*
-       Demo prediction
-    */
-
-    const isUp =
-        Math.random() > 0.45;
-
-
-    if (isUp) {
-
-        signal.innerText = "UP";
-
-        signal.className =
-            "signal up";
-
-    } else {
-
-        signal.innerText = "DOWN";
-
-        signal.className =
-            "signal down";
-
-    }
-
-
-    /*
-       Demo confidence
-    */
-
-    const value =
-        Math.floor(
-            78 + Math.random() * 15
-        );
-
-
-    confidence.innerText =
-        value + "%";
-
-
-}, 10000);
-
-
-/* =====================================================
-   RESPONSIVE
-   ===================================================== */
-
-window.addEventListener(
-    "resize",
-    () => {
-
+    window.addEventListener("resize", () => {
         chart.applyOptions({
-
-            width:
-            container.clientWidth,
-
-            height:
-            container.clientHeight
-
+            width: container.clientWidth,
+            height: container.clientHeight
         });
+    });
 
-    }
-);
-
-
-/* =====================================================
-   INITIAL VIEW
-   ===================================================== */
-
-setTimeout(() => {
-
-    chart.timeScale().fitContent();
-
-}, 200);
-
-
+    setTimeout(() => {
+        chart.timeScale().fitContent();
+    }, 200);
 </script>
 
 </body>
