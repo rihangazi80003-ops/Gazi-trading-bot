@@ -166,7 +166,6 @@
         wickDownColor: "#ff4b3e"
     });
 
-    // Fetch Historical & Real-Time Data from Twelve Data API
     async function loadMarketData() {
         try {
             const response = await fetch(`https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1min&outputsize=40&apikey=${apiKey}`);
@@ -195,7 +194,6 @@
 
     loadMarketData();
 
-    // Poll for live price updates every 10 seconds from Twelve Data
     setInterval(async () => {
         try {
             const res = await fetch(`https://api.twelvedata.com/price?symbol=${symbol}&apikey=${apiKey}`);
@@ -209,7 +207,6 @@
         }
     }, 10000);
 
-    // AI Signal Switcher
     setInterval(() => {
         const signal = document.getElementById("signal");
         const confidence = document.getElementById("confidence");
