@@ -1,1 +1,190 @@
+rsi > 50 &&
+        rsi < 70
+      ) {
 
+        upScore += 1;
+
+      } else if (
+        rsi < 50 &&
+        rsi > 30
+      ) {
+
+        downScore += 1;
+
+      }
+
+    }
+
+
+    /* MACD */
+
+    if (
+      macdTrend === "BULLISH"
+    ) {
+
+      upScore += 2;
+
+    } else if (
+      macdTrend === "BEARISH"
+    ) {
+
+      downScore += 2;
+
+    }
+
+
+    /* Last candle */
+
+    if (
+      lastCandle.close >
+      lastCandle.open
+    ) {
+
+      upScore += 1;
+
+    } else if (
+      lastCandle.close <
+      lastCandle.open
+    ) {
+
+      downScore += 1;
+
+    }
+
+
+    const totalScore =
+      upScore + downScore;
+
+
+    let signal =
+      "WAIT";
+
+    let confidence =
+      50;
+
+
+    if (
+      totalScore > 0
+    ) {
+
+      if (
+        upScore > downScore
+      ) {
+
+        signal =
+          "UP";
+
+        confidence =
+          Math.round(
+            50 +
+            (
+              upScore /
+              totalScore
+            ) * 40
+          );
+
+      } else if (
+        downScore > upScore
+      ) {
+
+        signal =
+          "DOWN";
+
+        confidence =
+          Math.round(
+            50 +
+            (
+              downScore /
+              totalScore
+            ) * 40
+          );
+
+      } else {
+
+        signal =
+          "WAIT";
+
+        confidence =
+          50;
+
+      }
+
+    }
+
+
+    /* =========================
+       DISPLAY SIGNAL
+    ========================= */
+
+    signalElement.textContent =
+      signal;
+
+    confidenceElement.textContent =
+      confidence + "%";
+
+
+    if (
+      signal === "UP"
+    ) {
+
+      signalElement.className =
+        "signal green";
+
+    } else if (
+      signal === "DOWN"
+    ) {
+
+      signalElement.className =
+        "signal red";
+
+    } else {
+
+      signalElement.className =
+        "signal yellow";
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Market Error:",
+      error
+    );
+
+    statusElement.textContent =
+      "ERROR: " +
+      error.message;
+
+    liveTextElement.textContent =
+      "OFFLINE";
+
+    signalElement.textContent =
+      "WAIT";
+
+    confidenceElement.textContent =
+      "--%";
+
+  }
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+loadMarketData();
+
+
+/* Refresh every 60 seconds */
+
+setInterval(
+  loadMarketData,
+  60000
+);
+
+</script>
+
+</body>
+</html>
