@@ -20,7 +20,6 @@
             box-shadow: 0 15px 45px rgba(0,0,0,.5);
         }
 
-        /* HEADER */
         .header {
             height: 55px;
             padding: 10px 14px;
@@ -43,7 +42,6 @@
         }
         .tf { padding: 5px 10px; border-radius: 6px; background: #171d28; color: #dce2eb; font-size: 11px; }
 
-        /* CHART */
         .chart-area {
             position: relative;
             width: 100%;
@@ -52,7 +50,6 @@
         }
         #chart { width: 100%; height: 100%; }
 
-        /* CURRENT PRICE LABEL */
         .price-label {
             position: absolute;
             right: 0;
@@ -65,7 +62,6 @@
             z-index: 20;
         }
 
-        /* ADVANCE LINE */
         .advance-line {
             position: absolute;
             top: 0; bottom: 0;
@@ -83,7 +79,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* FOOTER */
         .footer {
             height: 48px;
             display: flex;
@@ -103,27 +98,24 @@
 <body>
 
 <div class="finorix">
-    <!-- HEADER -->
     <div class="header">
         <div>
             <div class="title">Finorix AI Market</div>
             <div class="market">
-                <span class="live-dot"></span> USD/ARS (OTC) <span class="live">LIVE</span>
+                <span class="live-dot"></span> USD/ARS (Live API) <span class="live">LIVE</span>
             </div>
         </div>
-        <div class="tf">1m</div>
+        <div class="tf">1min</div>
     </div>
 
-    <!-- CHART -->
     <div class="chart-area">
         <div id="chart"></div>
         <div class="advance-line">
             <span class="advance-text">ADVANCE</span>
         </div>
-        <div id="price" class="price-label">1460.14</div>
+        <div id="price" class="price-label">Loading...</div>
     </div>
 
-    <!-- FOOTER -->
     <div class="footer">
         <div>
             <span class="signal-title">AI SIGNAL</span>
@@ -131,14 +123,16 @@
         </div>
         <div>
             <span class="signal-title">CONFIDENCE</span>
-            <span id="confidence" class="confidence">86%</span>
+            <span id="confidence" class="confidence">88%</span>
         </div>
     </div>
 </div>
 
 <script>
-    const container = document.getElementById("chart");
+    const apiKey = "5ef5ccfbb16144b38d7916eefe80a02b";
+    const symbol = "USD/ARS";
 
+    const container = document.getElementById("chart");
     const chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
@@ -172,87 +166,60 @@
         wickDownColor: "#ff4b3e"
     });
 
-    const now = Math.floor(Date.now() / 60000) * 60;
-    let price = 1460.14;
-    let data = [];
-    let p = 1459.60;
+    // Fetch Historical & Real-Time Data from Twelve Data API
+    async function loadMarketData() {
+        try {
+            const response = await fetch(`https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1min&outputsize=40&apikey=${apiKey}`);
+            const result = await response.json();
 
-    // Historical Candles Generator
-    for (let i = 35; i >= 1; i--) {
-        const time = now - (i * 60);
-        const open = p;
-        const movement = (Math.random() - 0.48) * 0.20;
-        const close = open + movement;
-        const high = Math.max(open, close) + Math.random() * 0.08;
-        const low = Math.min(open, close) - Math.random() * 0.08;
+            if (result && result.values) {
+                const formattedData = result.values.reverse().map(item => ({
+                    time: Math.floor(new Date(item.datetime).getTime() / 1000),
+                    open: parseFloat(item.open),
+                    high: parseFloat(item.high),
+                    low: parseFloat(item.low),
+                    close: parseFloat(item.close)
+                }));
 
-        data.push({
-            time: time,
-            open: Number(open.toFixed(3)),
-            high: Number(high.toFixed(3)),
-            low: Number(low.toFixed(3)),
-            close: Number(close.toFixed(3))
-        });
-        p = close;
+                candles.setData(formattedData);
+                
+                if(formattedData.length > 0) {
+                    const lastPrice = formattedData[formattedData.length - 1].close;
+                    document.getElementById("price").innerText = lastPrice.toFixed(2);
+                }
+            }
+        } catch (error) {
+            console.error("API Error:", error);
+        }
     }
 
-    candles.setData(data);
+    loadMarketData();
 
-    let currentTime = now;
-    let current = {
-        time: currentTime,
-        open: p,
-        high: p,
-        low: p,
-        close: p
-    };
+    // Poll for live price updates every 10 seconds from Twelve Data
+    setInterval(async () => {
+        try {
+            const res = await fetch(`https://api.twelvedata.com/price?symbol=${symbol}&apikey=${apiKey}`);
+            const data = await res.json();
+            if(data && data.price) {
+                const livePrice = parseFloat(data.price);
+                document.getElementById("price").innerText = livePrice.toFixed(2);
+            }
+        } catch (e) {
+            console.error("Price fetch error:", e);
+        }
+    }, 10000);
 
-    candles.update(current);
-
-    // Live Tick Engine (Real-time candle fluctuation)
-    setInterval(() => {
-        const movement = (Math.random() - 0.49) * 0.035;
-        price += movement;
-        price = Number(price.toFixed(3));
-
-        current.close = price;
-        if (price > current.high) current.high = price;
-        if (price < current.low) current.low = price;
-
-        candles.update(current);
-        document.getElementById("price").innerText = price.toFixed(2);
-    }, 1000);
-
-    // New Candle every 60 seconds
-    setInterval(() => {
-        currentTime += 60;
-        current = {
-            time: currentTime,
-            open: price,
-            high: price,
-            low: price,
-            close: price
-        };
-        candles.update(current);
-    }, 60000);
-
-    // AI Signal & Confidence Switcher
+    // AI Signal Switcher
     setInterval(() => {
         const signal = document.getElementById("signal");
         const confidence = document.getElementById("confidence");
         
         const isUp = Math.random() > 0.45;
-        if (isUp) {
-            signal.innerText = "UP";
-            signal.className = "signal up";
-        } else {
-            signal.innerText = "DOWN";
-            signal.className = "signal down";
-        }
+        signal.innerText = isUp ? "UP" : "DOWN";
+        signal.className = isUp ? "signal up" : "signal down";
 
-        const value = Math.floor(78 + Math.random() * 15);
-        confidence.innerText = value + "%";
-    }, 10000);
+        confidence.innerText = Math.floor(80 + Math.random() * 14) + "%";
+    }, 8000);
 
     window.addEventListener("resize", () => {
         chart.applyOptions({
@@ -260,10 +227,6 @@
             height: container.clientHeight
         });
     });
-
-    setTimeout(() => {
-        chart.timeScale().fitContent();
-    }, 200);
 </script>
 
 </body>
