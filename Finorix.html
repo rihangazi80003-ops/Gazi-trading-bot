@@ -3,105 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finorix Pro V2 - Official UI</title>
+    <title>Finorix Pro - Ultimate UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0b0e14; color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         .finorix-widget {
             background: #121824;
             border: 1px solid #2a3447;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+            border-radius: 14px;
             width: 100%;
-            max-width: 320px;
+            max-width: 330px;
         }
         .chart-container {
-            background: #090d14;
+            background: #070a10;
             border: 1px solid #1e2636;
             border-radius: 8px;
-            height: 140px;
+            height: 150px;
             position: relative;
             overflow: hidden;
         }
-        .candle-green { background: #0faf59; box-shadow: 0 0 5px rgba(15,175,89,0.5); }
-        .candle-red { background: #ff4757; box-shadow: 0 0 5px rgba(255,71,87,0.5); }
+        .candle-green { background: #0faf59; box-shadow: 0 0 8px rgba(15,175,89,0.6); }
+        .candle-red { background: #ff4757; box-shadow: 0 0 8px rgba(255,71,87,0.6); }
         .grid-line {
             position: absolute; left: 0; right: 0; height: 1px;
-            border-top: 1px dashed rgba(255, 255, 255, 0.04);
+            border-top: 1px dashed rgba(255, 255, 255, 0.05);
         }
     </style>
 </head>
 <body class="flex justify-center items-center h-screen p-3">
 
-    <div class="finorix-widget p-3 space-y-2.5">
+    <div class="finorix-widget p-3.5 space-y-3">
         
-        <!-- Header: Logo & Status -->
-        <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+        <!-- Header -->
+        <div class="flex justify-between items-center border-b border-gray-800 pb-2.5">
             <div class="flex items-center space-x-1.5">
-                <span class="bg-purple-600 text-[9px] font-black px-1.5 py-0.5 rounded text-white tracking-wider">FINORIX PRO</span>
-                <span class="text-[8px] text-gray-400">RAPI SOFTWARE</span>
+                <span class="bg-purple-600 text-[10px] font-black px-2 py-0.5 rounded text-white tracking-wider">FINORIX</span>
+                <span class="text-[8px] text-gray-400 font-semibold">RAPI SOFTWARE</span>
             </div>
-            <div class="flex items-center space-x-1 bg-black/40 px-2 py-0.5 rounded border border-gray-800">
+            <div class="flex items-center space-x-1 bg-black/50 px-2 py-0.5 rounded border border-gray-800">
                 <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
                 <span class="text-[8px] text-green-400 font-bold">Autoconnect</span>
             </div>
         </div>
 
-        <!-- Pair Selector Row matching video -->
-        <div class="bg-black/50 border border-gray-800 rounded-lg p-2 flex justify-between items-center">
+        <!-- Pair Selector -->
+        <div class="bg-black/60 border border-gray-800 rounded-lg p-2.5 flex justify-between items-center cursor-pointer hover:border-purple-500 transition-all">
             <div class="flex items-center space-x-2">
-                <span class="text-xs">📈</span>
+                <span class="text-sm">📈</span>
                 <div>
-                    <p class="text-[10px] font-bold text-gray-200">USD/ARS (OTC)</p>
-                    <p class="text-[7px] text-gray-400">76354873635</p>
+                    <p class="text-[11px] font-bold text-gray-100">EUR/NZD (OTC) 1m</p>
+                    <p class="text-[8px] text-gray-400">763.5487.8685</p>
                 </div>
             </div>
             <span class="text-gray-400 text-xs">▼</span>
         </div>
 
-        <!-- Chart Screen with Stable Candles -->
-        <div class="chart-container flex items-center justify-between px-2">
-            <div class="grid-line" style="top: 30%;"></div>
-            <div class="grid-line" style="top: 70%;"></div>
+        <!-- Chart Screen with Stable Professional Candles -->
+        <div class="chart-container flex items-center justify-between px-2.5">
+            <div class="grid-line" style="top: 25%;"></div>
+            <div class="grid-line" style="top: 50%;"></div>
+            <div class="grid-line" style="top: 75%;"></div>
             
-            <!-- Static stable professional candles -->
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-10 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:6px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-14 rounded-sm"></div><div style="width:1px;height:2px;" class="bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:3px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-8 rounded-sm"></div><div style="width:1px;height:5px;" class="bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-12 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:2px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-16 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-10 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-14 rounded-sm"></div><div style="width:1px;height:2px;" class="bg-green-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:3px;" class="bg-red-500"></div><div class="candle-red w-1.5 h-9 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-red-500"></div></div>
-            <div class="flex flex-col items-center justify-center h-full w-3"><div style="width:1px;height:4px;" class="bg-green-500"></div><div class="candle-green w-1.5 h-18 rounded-sm animate-pulse"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
+            <!-- Static stable candles matching video layout -->
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:6px;" class="bg-red-500"></div><div class="candle-red w-2 h-12 rounded-sm"></div><div style="width:1px;height:6px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:4px;" class="bg-green-500"></div><div class="candle-green w-2 h-16 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:8px;" class="bg-red-500"></div><div class="candle-red w-2 h-10 rounded-sm"></div><div style="width:1px;height:5px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-2 h-14 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:3px;" class="bg-green-500"></div><div class="candle-green w-2 h-20 rounded-sm"></div><div style="width:1px;height:5px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:6px;" class="bg-red-500"></div><div class="candle-red w-2 h-12 rounded-sm"></div><div style="width:1px;height:4px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:4px;" class="bg-green-500"></div><div class="candle-green w-2 h-16 rounded-sm"></div><div style="width:1px;height:6px;" class="bg-green-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:5px;" class="bg-red-500"></div><div class="candle-red w-2 h-14 rounded-sm"></div><div style="width:1px;height:3px;" class="bg-red-500"></div></div>
+            <div class="flex flex-col items-center justify-center h-full w-3.5"><div style="width:1px;height:5px;" class="bg-green-500"></div><div class="candle-green w-2 h-22 rounded-sm animate-pulse"></div><div style="width:1px;height:4px;" class="bg-green-500"></div></div>
         </div>
 
-        <!-- Bottom Status Bar -->
-        <div class="grid grid-cols-2 gap-2 text-center pt-1">
-            <div class="bg-black/50 border border-gray-800 p-1.5 rounded">
-                <span class="text-[7px] text-gray-400 block">PENDING TRADE</span>
-                <span class="text-xs font-bold text-blue-400">300 $</span>
+        <!-- Bottom Panel -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+            <div class="bg-black/60 border border-gray-800 p-2 rounded-lg text-center">
+                <span class="text-[8px] text-gray-400 block tracking-wider">PENDING TRADE</span>
+                <span class="text-xs font-bold text-blue-400 font-mono">300 $</span>
             </div>
-            <div class="bg-black/50 border border-gray-800 p-1.5 rounded">
-                <span class="text-[7px] text-gray-400 block">SIGNAL STATUS</span>
-                <span id="signalText" class="text-xs font-black text-green-400">NEXT UP</span>
+            <div class="bg-black/60 border border-gray-800 p-2 rounded-lg text-center">
+                <span class="text-[8px] text-gray-400 block tracking-wider">SIGNAL STATUS</span>
+                <span id="signalText" class="text-xs font-black text-green-400 tracking-wide">NEXT UP</span>
             </div>
         </div>
 
     </div>
 
     <script>
-        // Smooth stable signal switcher matching video behavior
+        // Smooth signal transition without erratic jumping
         setInterval(() => {
             const sig = document.getElementById('signalText');
-            if(Math.random() > 0.5) {
+            if(Math.random() > 0.45) {
                 sig.textContent = "NEXT UP";
-                sig.className = "text-xs font-black text-green-400";
+                sig.className = "text-xs font-black text-green-400 tracking-wide";
             } else {
                 sig.textContent = "NEXT DOWN";
-                sig.className = "text-xs font-black text-red-400";
+                sig.className = "text-xs font-black text-red-400 tracking-wide";
             }
-        }, 3000);
+        }, 4000);
     </script>
 </body>
 </html>
