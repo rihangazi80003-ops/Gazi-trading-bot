@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Finorix AI Pro</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        body { margin: 0; background: #000; color: #fff; font-family: sans-serif; text-align: center; }
+        #chart { width: 100%; height: 300px; }
+        .panel { padding: 10px; border-top: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <div id="chart"></div>
+    <div class="panel">
+        <div id="signal">ANALYZING...</div>
+        <div id="confidence">Confidence: --%</div>
+    </div>
+
+    <script>
+        const chart = LightweightCharts.createChart(document.getElementById('chart'), { width: 350, height: 300 });
+        const series = chart.addCandlestickSeries();
+
+        async function fetchMarket() {
+            try {
+                const res = await fetch('/api/market?symbol=EUR/USD&interval=1min');
+                const data = await res.json();
+                
+                const formatted = data.candles.map(c => ({
+                    time: Math.floor(new Date(c.time).getTime() / 1000),
+                    open: parseFloat(c.open), high: parseFloat(c.high),
+                    low: parseFloat(c.low), close: parseFloat(c.close)
+                })).sort((a,b) => a.time - b.time);
+
+                series.setData(formatted);
+                // পরবর্তী ধাপে আমরা এখানে সিগন্যাল ক্যালকুলেশন কোড যোগ করব
+                document.getElementById('signal').innerText = "SYSTEM READY";
+            } catch (e) {
+                document.getElementById('signal').innerText = "CONNECTION ERROR";
+            }
+        }
+
+        fetchMarket();
+        setInterval(fetchMarket, 60000);
+    </script>
+</body>
+</html>
 
