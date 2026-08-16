@@ -1,1 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>FINORIX AI - Live Market Engine</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: #080c14;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(13, 19, 33, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .chart {
+            position: relative;
+            height: 220px;
+            background: #04060b;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .grid-h,
+        .grid-v {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .grid-h {
+            left: 0;
+            right: 0;
+            height: 1px;
+            border-top: 1px dashed rgba(255,255,255,0.06);
+        }
+
+        .grid-v {
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            border-left: 1px dashed rgba(255,255,255,0.04);
+        }
+
+        #candles {
+            position: absolute;
+            inset: 0;
+        }
+
+        .candle-wrap {
+            position: absolute;
+            bottom: 0;
+            width: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .wick {
+            position: absolute;
+            width: 1px;
+        }
+
+        .body {
+            position: absolute;
+            width: 7px;
+            border-radius: 1px;
+        }
+
+        .green {
+            background: #26a69a;
+            box-shadow: 0 0 6px rgba(38,166,154,.4);
+        }
+
+        .red {
+            background: #ef5350;
+            box-shadow: 0 0 6px rgba(239,83,80,.4);
+        }
+
+        .price-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #0984e3;
+            box-shadow: 0 0 5px rgba(9,132,227,.8);
+            z-index: 10;
+        }
+
+        .price-label {
+            position: absolute;
+            right: 3px;
+            background: #0984e3;
+            color: white;
+            font-size: 8px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            z-index: 11;
+            font-family: monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body class="p-3 min-h-screen flex flex-col items-center">
+
+<div class="w-full max-w-sm space-y-3">
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-2xl p-4 text-center">
+
+        <h1 class="text-base font-black text-purple-400">
+            FINORIX AI
+        </h1>
+
+        <p class="text-[8px] text-gray-400 tracking-widest uppercase">
+            Real Market Prediction Engine
+        </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- MARKET CONTROL -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-2xl p-3 space-y-3">
+
+        <!-- MARKET TYPE -->
+
+        <div>
+
+            <label class="text-[8px] text-gray-400 font-bold">
+                MARKET TYPE
+            </label>
+
+            <div class="grid grid-cols-2 gap-2 mt-1">
+
+                <button
+                    id="btnREAL"
+                    onclick="switchMarket('REAL')"
+                    class="bg-purple-600 text-white py-2 rounded-lg text-xs font-bold">
+                    REAL MARKET
+                </button>
+
+                <button
+                    id="btnOTC"
+                    onclick="switchMarket('OTC')"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold">
+                    OTC
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAIR -->
+
+        <div>
+
+            <label class="text-[8px] text-gray-400 font-bold">
+                ASSET PAIR
+            </label>
+
+            <select
+                id="assetSelect"
+                onchange="loadMarket()"
+                class="w-full mt-1 bg-black border border-gray-700 rounded-lg p-2 text-xs text-white">
+
+            </select>
+
+        </div>
+
+
+        <!-- TIMEFRAME -->
+
+        <div>
+
+            <label class="text-[8px] text-gray-400 font-bold">
+                TIMEFRAME
+            </label>
+
+            <div class="grid grid-cols-4 gap-1 mt-1">
+
+                <button
+                    id="tf1"
+                    onclick="selectTimeframe(1)"
+                    class="bg-purple-600 text-white py-2 rounded-md text-[10px] font-bold">
+                    1 MIN
+                </button>
+
+                <button
+                    id="tf2"
+                    onclick="selectTimeframe(2)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold">
+                    2 MIN
+                </button>
+
+                <button
+                    id="tf3"
+                    onclick="selectTimeframe(3)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold">
+                    3 MIN
+                </button>
+
+                <button
+                    id="tf5"
+                    onclick="selectTimeframe(5)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold">
+                    5 MIN
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- REFRESH -->
+
+        <button
+            onclick="loadMarket()"
+            id="refreshBtn"
+            class="w-full bg-purple-600 hover:bg-purple-500 py-2 rounded-xl text-xs font-black">
+
+            ANALYZE MARKET
+
+        </button>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- DATA STATUS -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between items-center">
+
+            <div class="flex items-center gap-2">
+
+                <span
+                    id="statusDot"
+                    class="status-dot bg-yellow-500">
+                </span>
+
+                <span
+                    id="dataStatus"
+                    class="text-[10px] font-bold">
+                    CONNECTING...
+                </span>
+
+            </div>
+
+            <span
+                id="dataAge"
+                class="text-[9px] text-gray-400">
+                --
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- INDICATORS -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="grid grid-cols-2 gap-2 text-[9px]">
+
+            <div>
+                RSI:
+                <span
+                    id="rsi"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+            <div>
+                MACD:
+                <span
+                    id="macd"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+            <div>
+                EMA:
+                <span
+                    id="ema"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+            <div>
+                ADX:
+                <span
+                    id="adx"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+            <div>
+                STRUCTURE:
+                <span
+                    id="structure"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+            <div>
+                REGIME:
+                <span
+                    id="regime"
+                    class="text-green-400 font-bold">
+                    --
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- SIGNAL -->
+    <!-- ================================================= -->
+
+    <div
+        id="signalBox"
+        class="glass-card rounded-2xl p-5 text-center">
+
+        <p class="text-[8px] text-gray-400 uppercase">
+            FINORIX AI SIGNAL
+        </p>
+
+        <p
+            id="signal"
+            class="text-3xl font-black text-yellow-400 mt-1">
+            WAIT
+        </p>
+
+        <p
+            id="confidence"
+            class="text-[10px] text-gray-400 mt-1">
+            Waiting for market data
+        </p>
+
+        <p
+            id="reason"
+            class="text-[9px] text-gray-500 mt-2">
+            --
+        </p>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- CHART -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between items-center mb-2">
+
+            <span
+                id="chartPair"
+                class="text-xs font-black">
+                EUR/USD
+            </span>
+
+            <span
+                id="chartTimeframe"
+                class="text-[9px] text-purple-400 font-bold">
+                1 MIN
+            </span>
+
+        </div>
+
+        <div class="chart" id="chart">
+
+            <div class="grid-h" style="top:25%"></div>
+            <div class="grid-h" style="top:50%"></div>
+            <div class="grid-h" style="top:75%"></div>
+
+            <div class="grid-v" style="left:20%"></div>
+            <div class="grid-v" style="left:40%"></div>
+            <div class="grid-v" style="left:60%"></div>
+            <div class="grid-v" style="left:80%"></div>
+
+            <div id="priceLine" class="price-line"></div>
+
+            <div
+                id="priceLabel"
+                class="price-label">
+                --
+            </div>
+
+            <div id="candles"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- DETAILS -->
+    <!-- ================================================= -->
+
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between text-[9px]">
+
+            <span class="text-gray-400">
+                SUPPORT
+            </span>
+
+            <span
+                id="support"
+                class="font-bold">
+                --
+            </span>
+
+        </div>
+
+        <div class="flex justify-between text-[9px] mt-1">
+
+            <span class="text-gray-400">
+                RESISTANCE
+            </span>
+
+            <span
+                id="resistance"
+                class="font-bold">
+                --
+            </span>
+
+        </div>
+
+        <div class="flex justify-between text-[9px] mt-1">
+
+            <span class="text-gray-400">
+                ATR
+            </span>
+
+            <span
+                id="atr"
+                class="font-bold">
+                --
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ===================================================== -->
+<!-- ENGINE -->
+<!-- ===================================================== -->
+
+<script src="/engine.js"></script>
+
+
+<script>
+
+let currentMarket = "REAL";
+
+let currentTimeframe = 1;
+
+let currentCandles = [];
+
+let loading = false;
+
+
+/* ======================================================
+   PAIRS
+====================================================== */
+
+const REAL_PAIRS = [
+
+    "EUR/USD",
+    "GBP/USD",
+    "USD/JPY",
+    "AUD/USD",
+    "USD/CAD",
+    "EUR/GBP"
+
+];
+
+const OTC_PAIRS = [
+
+    "EUR/USD",
+    "GBP/USD",
+    "USD/JPY",
+    "AUD/CAD",
+    "USD/CAD"
+
+];
+
+
+/* ======================================================
+   LOAD PAIRS
+====================================================== */
+
+function loadPairs() {
+
+    const select =
+        document.getElementById("assetSelect");
+
+    select.innerHTML = "";
+
+    const pairs =
+        currentMarket === "REAL"
+            ? REAL_PAIRS
+            : OTC_PAIRS;
+
+    pairs.forEach(pair => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = pair;
+
+        option.textContent =
+            currentMarket === "OTC"
+                ? pair + " (OTC)"
+                : pair;
+
+        select.appendChild(option);
+
+    });
+
+}
+
+
+/* ======================================================
+   MARKET SWITCH
+====================================================== */
+
+function switchMarket(type) {
+
+    currentMarket = type;
+
+    const real =
+        document.getElementById("btnREAL");
+
+    const otc =
+        document.getElementById("btnOTC");
+
+    if (type === "REAL") {
+
+        real.className =
+            "bg-purple-600 text-white py-2 rounded-lg text-xs font-bold";
+
+        otc.className =
+            "bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold";
+
+    } else {
+
+        otc.className =
+            "bg-purple-600 text-white py-2 rounded-lg text-xs font-bold";
+
+        real.className =
+            "bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold";
+
+    }
+
+    loadPairs();
+
+    loadMarket();
+
+}
+
+
+/* ======================================================
+   TIMEFRAME
+====================================================== */
+
+function selectTimeframe(minutes) {
+
+    currentTimeframe = minutes;
+
+    ["tf1","tf2","tf3","tf5"].forEach(id => {
+
+        document.getElementById(id).className =
+            "bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold";
+
+    });
+
+    document.getElementById(
+        "tf" + minutes
+    ).className =
+        "bg-purple-600 text-white py-2 rounded-md text-[10px] font-bold";
+
+    document.getElementById(
+        "chartTimeframe"
+    ).textContent =
+        minutes + " MIN";
+
+    loadMarket();
+
+}
+
+
+/* ======================================================
+   2/3/5 MIN AGGREGATION
+====================================================== */
+
+function aggregateCandles(candles, minutes) {
+
+    if (minutes === 1) {
+
+        return candles;
+
+    }
+
+    const seconds =
+        minutes * 60;
+
+    const groups = {};
+
+    candles.forEach(c => {
+
+        const bucket =
+            Math.floor(c.time / seconds) *
+            seconds;
+
+        if (!groups[bucket]) {
+
+            groups[bucket] = {
+
+                time: bucket,
+
+                datetime: c.datetime,
+
+                open: c.open,
+
+                high: c.high,
+
+                low: c.low,
+
+                close: c.close
+
+            };
+
+        } else {
+
+            groups[bucket].high =
+                Math.max(
+                    groups[bucket].high,
+                    c.high
+                );
+
+            groups[bucket].low =
+                Math.min(
+                    groups[bucket].low,
+                    c.low
+                );
+
+            groups[bucket].close =
+                c.close;
+
+        }
+
+    });
+
+    return Object.values(groups)
+        .sort((a,b) => a.time - b.time);
+
+}
+
+
+/* ======================================================
+   API INTERVAL
+====================================================== */
+
+function getApiInterval() {
+
+    /*
+      Twelve Data থেকে সবসময় 1 মিনিট data নেব।
+
+      2/3/5 মিনিট হলে browser-এ
+      1-minute candles aggregate করব।
+    */
+
+    return "1min";
+
+}
+
+
+/* ======================================================
+   LOAD MARKET
+====================================================== */
+
+async function loadMarket() {
+
+    if (loading) return;
+
+    loading = true;
+
+    const btn =
+        document.getElementById("refreshBtn");
+
+    btn.textContent =
+        "LOADING MARKET...";
+
+    setStatus(
+        "LOADING...",
+        "yellow"
+    );
+
+    try {
+
+        const selectedPair =
+            document.getElementById(
+                "assetSelect"
+            ).value;
+
+        if (!selectedPair) {
+
+            throw new Error(
+                "No asset selected"
+            );
+
+        }
+
+
+        /*
+          IMPORTANT:
+          OTC is NOT being claimed as real Quotex OTC data.
+
+          Twelve Data supplies the market feed.
+        */
+
+        if (currentMarket === "OTC") {
+
+            setStatus(
+                "OTC FEED NOT CONNECTED",
+                "yellow"
+            );
+
+            showNoTrade(
+                "OTC data source is not connected"
+            );
+
+            return;
+
+        }
+
+
+        const url =
+            "/api/market?" +
+            new URLSearchParams({
+
+                symbol: selectedPair,
+
+                interval:
+                    getApiInterval()
+
+            }).toString();
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            data.status !== "ok") {
+
+            throw new Error(
+                data.message ||
+                "Market API failed"
+            );
+
+        }
+
+
+        if (
+            data.market?.isStale
+        ) {
+
+            showNoTrade(
+                "MARKET DATA IS STALE"
+            );
+
+            setStatus(
+                "STALE DATA",
+                "red"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            data.market?.flatMarket
+        ) {
+
+            showNoTrade(
+                "FLAT MARKET"
+            );
+
+            setStatus(
+                "FLAT MARKET",
+                "yellow"
+            );
+
+            return;
+
+        }
+
+
+        /*
+          Aggregate 1m -> 2m / 3m / 5m
+        */
+
+        currentCandles =
+            aggregateCandles(
+                data.candles,
+                currentTimeframe
+            );
+
+
+        if (
+            currentCandles.length < 60
+        ) {
+
+            throw new Error(
+                "Not enough candles for AI analysis"
+            );
+
+        }
+
+
+        renderChart(
+            currentCandles
+        );
+
+
+        runEngine(
+            currentCandles,
+            data
+        );
+
+
+        setStatus(
+            "LIVE DATA",
+            "green"
+        );
+
+
+        const age =
+            data.market?.ageSeconds ?? 0;
+
+        document.getElementById(
+            "dataAge"
+        ).textContent =
+            "Age: " + age + "s";
+
+
+        document.getElementById(
+            "chartPair"
+        ).textContent =
+            selectedPair;
+
+
+    } catch (error) {
+
+        console.error(
+            "FINORIX ERROR:",
+            error
+        );
+
+        showNoTrade(
+            error.message ||
+            "Market connection error"
+        );
+
+        setStatus(
+            "API ERROR",
+            "red"
+        );
+
+    } finally {
+
+        loading = false;
+
+        btn.textContent =
+            "ANALYZE MARKET";
+
+    }
+
+}
+
+
+/* ======================================================
+   RUN ENGINE
+====================================================== */
+
+function runEngine(candles, apiData) {
+
+    const opens =
+        candles.map(c => c.open);
+
+    const highs =
+        candles.map(c => c.high);
+
+    const lows =
+        candles.map(c => c.low);
+
+    const closes =
+        candles.map(c => c.close);
+
+
+    const result =
+        window.btzEngine.analyzeMarket(
+
+            closes,
+
+            highs,
+
+            lows,
+
+            [],
+
+            opens
+
+        );
+
+
+    console.log(
+        "FINORIX ENGINE RESULT:",
+        result
+    );
+
+
+    /*
+      INDICATORS
+    */
+
+    const d =
+        result.details || {};
+
+
+    document.getElementById(
+        "rsi"
+    ).textContent =
+        d.rsi ?? "--";
+
+
+    document.getElementById(
+        "macd"
+    ).textContent =
+        d.macdHistogram !== undefined
+            ? Number(
+                d.macdHistogram
+              ).toFixed(6)
+            : "--";
+
+
+    document.getElementById(
+        "ema"
+    ).textContent =
+        d.trend ?? "--";
+
+
+    document.getElementById(
+        "adx"
+    ).textContent =
+        d.adx ?? "--";
+
+
+    document.getElementById(
+        "structure"
+    ).textContent =
+        d.structure ?? "--";
+
+
+    document.getElementById(
+        "regime"
+    ).textContent =
+        d.marketRegime ?? "--";
+
+
+    document.getElementById(
+        "support"
+    ).textContent =
+        d.support ?? "--";
+
+
+    document.getElementById(
+        "resistance"
+    ).textContent =
+        d.resistance ?? "--";
+
+
+    document.getElementById(
+        "atr"
+    ).textContent =
+        d.atr ?? "--";
+
+
+    /*
+      SIGNAL
+    */
+
+    const signal =
+        result.signal;
+
+
+    const signalEl =
+        document.getElementById(
+            "signal"
+        );
+
+    const confidenceEl =
+        document.getElementById(
+            "confidence"
+        );
+
+    const reasonEl =
+        document.getElementById(
+            "reason"
+        );
+
+
+    if (signal === "UP") {
+
+        signalEl.textContent =
+            "UP";
+
+        signalEl.className =
+            "text-3xl font-black text-green-500 mt-1";
+
+        confidenceEl.textContent =
+            "Confidence: " +
+            result.confidence +
+            "%";
+
+    }
+
+    else if (signal === "DOWN") {
+
+        signalEl.textContent =
+            "DOWN";
+
+        signalEl.className =
+            "text-3xl font-black text-red-500 mt-1";
+
+        confidenceEl.textContent =
+            "Confidence: " +
+            result.confidence +
+            "%";
+
+    }
+
+    else {
+
+        signalEl.textContent =
+            "NO TRADE";
+
+        signalEl.className =
+            "text-3xl font-black text-yellow-400 mt-1";
+
+        confidenceEl.textContent =
+            "Confidence: 0%";
+
+    }
+
+
+    reasonEl.textContent =
+        result.reason || "--";
+
+}
+
+
+/* ======================================================
+   NO TRADE
+====================================================== */
+
+function showNoTrade(reason) {
+
+    const signal =
+        document.getElementById(
+            "signal"
+        );
+
+    const confidence =
+        document.getElementById(
+            "confidence"
+        );
+
+    const reasonEl =
+        document.getElementById(
+            "reason"
+        );
+
+
+    signal.textContent =
+        "NO TRADE";
+
+    signal.className =
+        "text-3xl font-black text-yellow-400 mt-1";
+
+    confidence.textContent =
+        "Confidence: 0%";
+
+    reasonEl.textContent =
+        reason || "Waiting for valid market data";
+
+}
+
+
+/* ======================================================
+   STATUS
+====================================================== */
+
+function setStatus(text, type) {
+
+    const status =
+        document.getElementById(
+            "dataStatus"
+        );
+
+    const dot =
+        document.getElementById(
+            "statusDot"
+        );
+
+
+    status.textContent =
+        text;
+
+
+    if (type === "green") {
+
+        dot.className =
+            "status-dot bg-green-500";
+
+    }
+
+    else if (type === "red") {
+
+        dot.className =
+            "status-dot bg-red-500";
+
+    }
+
+    else {
+
+        dot.className =
+            "status-dot bg-yellow-500";
+
+    }
+
+}
+
+
+/* ======================================================
+   CHART
+====================================================== */
+
+function renderChart(candles) {
+
+    const container =
+        document.getElementById(
+            "candles"
+        );
+
+    container.innerHTML = "";
+
+
+    const visible =
+        candles.slice(-40);
+
+
+    if (!visible.length) return;
+
+
+    let highest =
+        Math.max(
+            ...visible.map(c => c.high)
+        );
+
+    let lowest =
+        Math.min(
+            ...visible.map(c => c.low)
+        );
+
+
+    const range =
+        highest - lowest || 0.0001;
+
+
+    visible.forEach(
+        (candle, index) => {
+
+            const x =
+                (index /
+                Math.max(
+                    visible.length - 1,
+                    1
+                )) * 96 + 2;
+
+
+            const highY =
+                ((highest -
+                candle.high) /
+                range) * 90;
+
+
+            const lowY =
+                ((highest -
+                candle.low) /
+                range) * 90;
+
+
+            const openY =
+                ((highest -
+                candle.open) /
+                range) * 90;
+
+
+            const closeY =
+                ((highest -
+                candle.close) /
+                range) * 90;
+
+
+            const bodyTop =
+                Math.min(
+                    openY,
+                    closeY
+                );
+
+
+            const bodyHeight =
+                Math.max(
+                    Math.abs(
+                        closeY - openY
+                    ),
+                    1.5
+                );
+
+
+            const bullish =
+                candle.close >=
+                candle.open;
+
+
+            const colorClass =
+                bullish
+                    ? "green"
+                    : "red";
+
+
+            const wrap =
+                document.createElement(
+                    "div"
+                );
+
+            wrap.className =
+                "candle-wrap";
+
+
+            wrap.style.left =
+                x + "%";
+
+
+            wrap.style.height =
+                "100%";
+
+
+            const wick =
+                document.createElement(
+                    "div"
+                );
+
+            wick.className =
+                "wick " +
+                colorClass;
+
+
+            wick.style.top =
+                highY + "%";
+
+
+            wick.style.height =
+                Math.max(
+                    lowY - highY,
+                    1
+                ) + "%";
+
+
+            const body =
+                document.createElement(
+                    "div"
+                );
+
+            body.className =
+                "body " +
+                colorClass;
+
+
+            body.style.top =
+                bodyTop + "%";
+
+
+            body.style.height =
+                bodyHeight + "%";
+
+
+            wrap.appendChild(
+                wick
+            );
+
+            wrap.appendChild(
+                body
+            );
+
+            container.appendChild(
+                wrap
+            );
+
+        }
+    );
+
+
+    /*
+      Current price line
+    */
+
+    const latest =
+        visible[
+            visible.length - 1
+        ];
+
+
+    const pricePosition =
+        ((highest -
+        latest.close) /
+        range) * 100;
+
+
+    document.getElementById(
+        "priceLine"
+    ).style.top =
+        Math.max(
+            2,
+            Math.min(
+                98,
+                pricePosition
+            )
+        ) + "%";
+
+
+    document.getElementById(
+        "priceLabel"
+    ).style.top =
+        Math.max(
+            2,
+            Math.min(
+                95,
+                pricePosition
+            )
+        ) + "%";
+
+
+    document.getElementById(
+        "priceLabel"
+    ).textContent =
+        latest.close;
+
+}
+
+
+/* ======================================================
+   AUTO REFRESH
+====================================================== */
+
+setInterval(
+    () => {
+
+        if (!document.hidden) {
+
+            loadMarket();
+
+        }
+
+    },
+    60000
+);
+
+
+/* ======================================================
+   START
+====================================================== */
+
+loadPairs();
+
+loadMarket();
+
+</script>
+
+</body>
+</html>
