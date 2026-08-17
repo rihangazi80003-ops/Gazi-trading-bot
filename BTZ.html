@@ -1,1 +1,2210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>BTZ Signal AI - Quotex Pro</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body {
+            background: #080c14;
+            color: white;
+            font-family: sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(13, 19, 33, 0.98);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.10);
+        }
+
+        .chart {
+            position: relative;
+            height: 190px;
+            background: #04060b;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .grid-h,
+        .grid-v {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .grid-h {
+            left: 0;
+            right: 0;
+            height: 1px;
+            border-top: 1px dashed rgba(255,255,255,0.06);
+        }
+
+        .grid-v {
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            border-left: 1px dashed rgba(255,255,255,0.04);
+        }
+
+        #candles {
+            position: absolute;
+            inset: 0;
+        }
+
+        .candle-wrap {
+            position: absolute;
+            bottom: 0;
+            width: 12px;
+            height: 100%;
+        }
+
+        .wick {
+            position: absolute;
+            width: 1px;
+        }
+
+        .body {
+            position: absolute;
+            width: 7px;
+            border-radius: 1px;
+        }
+
+        .green {
+            background: #26a69a;
+            box-shadow: 0 0 6px rgba(38,166,154,.4);
+        }
+
+        .red {
+            background: #ef5350;
+            box-shadow: 0 0 6px rgba(239,83,80,.4);
+        }
+
+        .price-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #0984e3;
+            box-shadow: 0 0 5px rgba(9,132,227,.8);
+            z-index: 10;
+        }
+
+        .price-label {
+            position: absolute;
+            right: 3px;
+            background: #0984e3;
+            color: white;
+            font-size: 8px;
+            padding: 2px 4px;
+            border-radius: 2px;
+            z-index: 11;
+            font-family: monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+
+<body class="p-3 min-h-screen flex flex-col items-center">
+
+<div class="w-full max-w-sm space-y-3">
+
+    <!-- HEADER -->
+    <div class="glass-card rounded-2xl p-4 text-center">
+        <h1 class="text-base font-black text-purple-400">
+            BTZ SIGNAL AI
+        </h1>
+
+        <p class="text-[8px] text-gray-400 tracking-widest uppercase">
+            Quotex Pro Signal Engine
+        </p>
+    </div>
+
+
+    <!-- CONTROLS -->
+    <div class="glass-card rounded-2xl p-3 space-y-3">
+
+        <!-- BROKER -->
+        <div>
+            <label class="text-[8px] text-gray-400 font-bold">
+                BROKER
+            </label>
+
+            <select
+                id="brokerSelect"
+                class="w-full mt-1 bg-black border border-gray-700 rounded-lg p-2 text-xs text-white"
+            >
+                <option>QUOTEX</option>
+                <option>POCKET OPTION</option>
+                <option>IQ OPTION</option>
+                <option>BINOMO</option>
+            </select>
+        </div>
+
+
+        <!-- MARKET TYPE -->
+        <div>
+            <label class="text-[8px] text-gray-400 font-bold">
+                MARKET TYPE
+            </label>
+
+            <div class="grid grid-cols-2 gap-2 mt-1">
+
+                <button
+                    id="btnOTC"
+                    onclick="switchMarket('OTC')"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold"
+                >
+                    OTC
+                </button>
+
+                <button
+                    id="btnREAL"
+                    onclick="switchMarket('REAL')"
+                    class="bg-purple-600 text-white py-2 rounded-lg text-xs font-bold"
+                >
+                    REAL MARKET
+                </button>
+
+            </div>
+        </div>
+
+
+        <!-- ASSET -->
+        <div>
+            <label class="text-[8px] text-gray-400 font-bold">
+                ASSET PAIR
+            </label>
+
+            <select
+                id="assetSelect"
+                onchange="updatePair()"
+                class="w-full mt-1 bg-black border border-gray-700 rounded-lg p-2 text-xs text-white"
+            ></select>
+        </div>
+
+
+        <!-- TIMEFRAME -->
+        <div>
+            <label class="text-[8px] text-gray-400 font-bold">
+                TIMEFRAME
+            </label>
+
+            <div class="grid grid-cols-4 gap-1 mt-1">
+
+                <button
+                    id="tf1"
+                    onclick="selectTimeframe(1)"
+                    class="bg-purple-600 text-white py-2 rounded-md text-[10px] font-bold"
+                >
+                    1 MIN
+                </button>
+
+                <button
+                    id="tf2"
+                    onclick="selectTimeframe(2)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold"
+                >
+                    2 MIN
+                </button>
+
+                <button
+                    id="tf3"
+                    onclick="selectTimeframe(3)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold"
+                >
+                    3 MIN
+                </button>
+
+                <button
+                    id="tf5"
+                    onclick="selectTimeframe(5)"
+                    class="bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold"
+                >
+                    5 MIN
+                </button>
+
+            </div>
+        </div>
+
+
+        <!-- ANALYZE -->
+        <button
+            id="generateBtn"
+            onclick="generateSignal()"
+            class="w-full bg-purple-600 hover:bg-purple-500 py-2 rounded-xl text-xs font-black"
+        >
+            GENERATE AI SIGNAL
+        </button>
+
+    </div>
+
+
+    <!-- STATUS -->
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between items-center">
+
+            <div class="flex items-center gap-2">
+
+                <span
+                    id="statusDot"
+                    class="status-dot bg-yellow-500"
+                ></span>
+
+                <span
+                    id="dataStatus"
+                    class="text-[10px] font-bold"
+                >
+                    READY
+                </span>
+
+            </div>
+
+            <span
+                id="dataAge"
+                class="text-[9px] text-gray-400"
+            >
+                --
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- INDICATORS -->
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="grid grid-cols-2 gap-2 text-[9px]">
+
+            <div>
+                RSI:
+                <span
+                    id="rsi"
+                    class="text-green-400 font-bold"
+                >
+                    --
+                </span>
+            </div>
+
+            <div>
+                MACD:
+                <span
+                    id="macd"
+                    class="text-green-400 font-bold"
+                >
+                    --
+                </span>
+            </div>
+
+            <div>
+                EMA:
+                <span
+                    id="ema"
+                    class="text-green-400 font-bold"
+                >
+                    --
+                </span>
+            </div>
+
+            <div>
+                ADX:
+                <span
+                    id="adx"
+                    class="text-green-400 font-bold"
+                >
+                    --
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- SIGNAL -->
+    <div
+        id="signalBox"
+        class="glass-card rounded-2xl p-5 text-center"
+    >
+
+        <p class="text-[8px] text-gray-400 uppercase">
+            BTZ AI SIGNAL
+        </p>
+
+        <p
+            id="signal"
+            class="text-3xl font-black text-yellow-400 mt-1"
+        >
+            WAIT
+        </p>
+
+        <p
+            id="confidence"
+            class="text-[10px] text-gray-400 mt-1"
+        >
+            Waiting for market data
+        </p>
+
+        <p
+            id="reason"
+            class="text-[9px] text-gray-500 mt-2"
+        >
+            Select market and generate signal
+        </p>
+
+    </div>
+
+
+    <!-- CHART -->
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between items-center mb-2">
+
+            <div>
+                <span
+                    id="chartPair"
+                    class="text-xs font-black"
+                >
+                    EUR/USD
+                </span>
+
+                <span
+                    id="chartMarket"
+                    class="text-[8px] text-gray-500 ml-1"
+                >
+                    REAL
+                </span>
+            </div>
+
+            <span
+                id="chartTimeframe"
+                class="text-[9px] text-purple-400 font-bold"
+            >
+                1 MIN
+            </span>
+
+        </div>
+
+
+        <div class="chart">
+
+            <div
+                class="grid-h"
+                style="top:25%"
+            ></div>
+
+            <div
+                class="grid-h"
+                style="top:50%"
+            ></div>
+
+            <div
+                class="grid-h"
+                style="top:75%"
+            ></div>
+
+            <div
+                class="grid-v"
+                style="left:20%"
+            ></div>
+
+            <div
+                class="grid-v"
+                style="left:40%"
+            ></div>
+
+            <div
+                class="grid-v"
+                style="left:60%"
+            ></div>
+
+            <div
+                class="grid-v"
+                style="left:80%"
+            ></div>
+
+            <div
+                id="priceLine"
+                class="price-line"
+            ></div>
+
+            <div
+                id="priceLabel"
+                class="price-label"
+            >
+                --
+            </div>
+
+            <div id="candles"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- DETAILS -->
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between text-[9px]">
+
+            <span class="text-gray-400">
+                SUPPORT
+            </span>
+
+            <span
+                id="support"
+                class="font-bold"
+            >
+                --
+            </span>
+
+        </div>
+
+        <div class="flex justify-between text-[9px] mt-1">
+
+            <span class="text-gray-400">
+                RESISTANCE
+            </span>
+
+            <span
+                id="resistance"
+                class="font-bold"
+            >
+                --
+            </span>
+
+        </div>
+
+        <div class="flex justify-between text-[9px] mt-1">
+
+            <span class="text-gray-400">
+                ATR
+            </span>
+
+            <span
+                id="atr"
+                class="font-bold"
+            >
+                --
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- CLOCK / NEXT CANDLE -->
+    <div class="glass-card rounded-xl p-3">
+
+        <div class="flex justify-between items-center">
+
+            <div>
+                <span class="text-[7px] text-gray-500 block">
+                    BANGLADESH TIME
+                </span>
+
+                <span
+                    id="liveClock"
+                    class="text-sm font-mono font-bold text-green-400"
+                >
+                    --
+                </span>
+            </div>
+
+            <div class="text-right">
+
+                <span class="text-[7px] text-gray-500 block">
+                    NEXT CANDLE
+                </span>
+
+                <span
+                    id="nextCandle"
+                    class="text-sm font-mono font-bold text-yellow-400"
+                >
+                    --
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    /*
+    =====================================================
+    BTZ SIGNAL AI
+    =====================================================
+
+    IMPORTANT:
+    This page is independent from index.html.
+
+    FINORIX index.html is NOT loaded here.
+    FINORIX engine.js is NOT loaded here.
+    =====================================================
+    */
+
+
+    let currentMarket = "REAL";
+    let currentTimeframe = 1;
+    let currentCandles = [];
+    let loading = false;
+
+
+    /*
+    =====================================================
+    PAIRS
+    =====================================================
+    */
+
+    const REAL_PAIRS = [
+        "EUR/USD",
+        "GBP/USD",
+        "USD/JPY",
+        "AUD/USD",
+        "USD/CAD",
+        "EUR/GBP"
+    ];
+
+    const OTC_PAIRS = [
+        "EUR/USD",
+        "GBP/USD",
+        "USD/JPY",
+        "AUD/CAD",
+        "USD/CAD"
+    ];
+
+
+    /*
+    =====================================================
+    LOAD PAIRS
+    =====================================================
+    */
+
+    function loadPairs() {
+
+        const select =
+            document.getElementById("assetSelect");
+
+        select.innerHTML = "";
+
+        const pairs =
+            currentMarket === "REAL"
+                ? REAL_PAIRS
+                : OTC_PAIRS;
+
+        pairs.forEach(pair => {
+
+            const option =
+                document.createElement("option");
+
+            option.value = pair;
+
+            option.textContent =
+                currentMarket === "OTC"
+                    ? pair + " (OTC)"
+                    : pair;
+
+            select.appendChild(option);
+
+        });
+
+        updatePair();
+    }
+
+
+    /*
+    =====================================================
+    MARKET SWITCH
+    =====================================================
+    */
+
+    function switchMarket(type) {
+
+        currentMarket = type;
+
+        const real =
+            document.getElementById("btnREAL");
+
+        const otc =
+            document.getElementById("btnOTC");
+
+        if (type === "REAL") {
+
+            real.className =
+                "bg-purple-600 text-white py-2 rounded-lg text-xs font-bold";
+
+            otc.className =
+                "bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold";
+
+        } else {
+
+            otc.className =
+                "bg-purple-600 text-white py-2 rounded-lg text-xs font-bold";
+
+            real.className =
+                "bg-black border border-gray-700 text-gray-400 py-2 rounded-lg text-xs font-bold";
+
+        }
+
+        document.getElementById(
+            "chartMarket"
+        ).textContent = type;
+
+        clearSignal();
+
+        loadPairs();
+    }
+
+
+    /*
+    =====================================================
+    TIMEFRAME
+    =====================================================
+    */
+
+    function selectTimeframe(minutes) {
+
+        currentTimeframe = minutes;
+
+        ["tf1","tf2","tf3","tf5"].forEach(id => {
+
+            document.getElementById(id).className =
+                "bg-black border border-gray-700 text-gray-400 py-2 rounded-md text-[10px] font-bold";
+
+        });
+
+        document.getElementById(
+            "tf" + minutes
+        ).className =
+            "bg-purple-600 text-white py-2 rounded-md text-[10px] font-bold";
+
+        document.getElementById(
+            "chartTimeframe"
+        ).textContent =
+            minutes + " MIN";
+
+        clearSignal();
+    }
+
+
+    /*
+    =====================================================
+    UPDATE PAIR
+    =====================================================
+    */
+
+    function updatePair() {
+
+        const select =
+            document.getElementById("assetSelect");
+
+        const pair =
+            select.value;
+
+        document.getElementById(
+            "chartPair"
+        ).textContent = pair || "--";
+
+        clearSignal();
+    }
+
+
+    /*
+    =====================================================
+    API
+    =====================================================
+    */
+
+    async function getMarketData() {
+
+        const pair =
+            document.getElementById(
+                "assetSelect"
+            ).value;
+
+        if (!pair) {
+            throw new Error(
+                "No asset selected"
+            );
+        }
+
+        /*
+        OTC is intentionally not treated as
+        real Quotex OTC data.
+        */
+
+        if (currentMarket === "OTC") {
+
+            throw new Error(
+                "Quotex OTC data source is not connected"
+            );
+        }
+
+
+        const params =
+            new URLSearchParams({
+
+                symbol: pair,
+
+                interval: "1min"
+
+            });
+
+
+        const response =
+            await fetch(
+                "/api/market?" +
+                params.toString(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok ||
+            data.status !== "ok") {
+
+            throw new Error(
+                data.message ||
+                "Market API failed"
+            );
+        }
+
+
+        if (data.market?.isStale) {
+
+            throw new Error(
+                "Market data is stale"
+            );
+        }
+
+
+        if (data.market?.flatMarket) {
+
+            throw new Error(
+                "Market appears flat"
+            );
+        }
+
+
+        return data;
+    }
+
+
+    /*
+    =====================================================
+    AGGREGATE 1 MIN -> 2/3/5 MIN
+    =====================================================
+    */
+
+    function aggregateCandles(
+        candles,
+        minutes
+    ) {
+
+        if (minutes === 1) {
+            return candles;
+        }
+
+        const seconds =
+            minutes * 60;
+
+        const groups = {};
+
+        candles.forEach(c => {
+
+            const bucket =
+                Math.floor(
+                    c.time / seconds
+                ) * seconds;
+
+
+            if (!groups[bucket]) {
+
+                groups[bucket] = {
+
+                    time: bucket,
+
+                    datetime: c.datetime,
+
+                    open: c.open,
+
+                    high: c.high,
+
+                    low: c.low,
+
+                    close: c.close
+
+                };
+
+            } else {
+
+                groups[bucket].high =
+                    Math.max(
+                        groups[bucket].high,
+                        c.high
+                    );
+
+                groups[bucket].low =
+                    Math.min(
+                        groups[bucket].low,
+                        c.low
+                    );
+
+                groups[bucket].close =
+                    c.close;
+
+            }
+
+        });
+
+
+        return Object.values(groups)
+            .sort(
+                (a,b) =>
+                    a.time - b.time
+            );
+    }
+
+
+    /*
+    =====================================================
+    INDICATORS
+    =====================================================
+    */
+
+    function calculateEMA(
+        values,
+        period
+    ) {
+
+        if (
+            values.length <
+            period
+        ) {
+            return null;
+        }
+
+        const multiplier =
+            2 / (period + 1);
+
+        let ema =
+            values
+                .slice(
+                    0,
+                    period
+                )
+                .reduce(
+                    (a,b) => a + b,
+                    0
+                ) / period;
+
+
+        for (
+            let i = period;
+            i < values.length;
+            i++
+        ) {
+
+            ema =
+                (
+                    values[i] -
+                    ema
+                ) *
+                multiplier +
+                ema;
+
+        }
+
+        return ema;
+    }
+
+
+    function calculateRSI(
+        closes,
+        period = 14
+    ) {
+
+        if (
+            closes.length <= period
+        ) {
+            return null;
+        }
+
+        let gains = 0;
+        let losses = 0;
+
+
+        for (
+            let i = 1;
+            i <= period;
+            i++
+        ) {
+
+            const change =
+                closes[i] -
+                closes[i - 1];
+
+            if (change >= 0) {
+                gains += change;
+            } else {
+                losses -= change;
+            }
+        }
+
+
+        let avgGain =
+            gains / period;
+
+        let avgLoss =
+            losses / period;
+
+
+        for (
+            let i = period + 1;
+            i < closes.length;
+            i++
+        ) {
+
+            const change =
+                closes[i] -
+                closes[i - 1];
+
+            const gain =
+                Math.max(
+                    change,
+                    0
+                );
+
+            const loss =
+                Math.max(
+                    -change,
+                    0
+                );
+
+            avgGain =
+                (
+                    avgGain *
+                    (period - 1) +
+                    gain
+                ) / period;
+
+            avgLoss =
+                (
+                    avgLoss *
+                    (period - 1) +
+                    loss
+                ) / period;
+        }
+
+
+        if (avgLoss === 0) {
+            return 100;
+        }
+
+
+        const rs =
+            avgGain /
+            avgLoss;
+
+
+        return 100 -
+            100 /
+            (1 + rs);
+    }
+
+
+    function calculateATR(
+        candles,
+        period = 14
+    ) {
+
+        if (
+            candles.length <= period
+        ) {
+            return null;
+        }
+
+        const trs = [];
+
+        for (
+            let i = 1;
+            i < candles.length;
+            i++
+        ) {
+
+            const c =
+                candles[i];
+
+            const prev =
+                candles[i - 1];
+
+            const tr =
+                Math.max(
+                    c.high - c.low,
+                    Math.abs(
+                        c.high -
+                        prev.close
+                    ),
+                    Math.abs(
+                        c.low -
+                        prev.close
+                    )
+                );
+
+            trs.push(tr);
+        }
+
+
+        const recent =
+            trs.slice(-period);
+
+
+        return recent.reduce(
+            (a,b) => a + b,
+            0
+        ) / recent.length;
+    }
+
+
+    /*
+    =====================================================
+    SIMPLE MACD
+    =====================================================
+    */
+
+    function calculateMACD(
+        closes
+    ) {
+
+        const ema12 =
+            calculateEMA(
+                closes,
+                12
+            );
+
+        const ema26 =
+            calculateEMA(
+                closes,
+                26
+            );
+
+        if (
+            ema12 === null ||
+            ema26 === null
+        ) {
+            return null;
+        }
+
+        return ema12 - ema26;
+    }
+
+
+    /*
+    =====================================================
+    ANALYZE MARKET
+    =====================================================
+    */
+
+    function analyzeMarket(
+        candles
+    ) {
+
+        const closes =
+            candles.map(
+                c => c.close
+            );
+
+
+        const ema9 =
+            calculateEMA(
+                closes,
+                9
+            );
+
+        const ema21 =
+            calculateEMA(
+                closes,
+                21
+            );
+
+        const rsi =
+            calculateRSI(
+                closes,
+                14
+            );
+
+        const macd =
+            calculateMACD(
+                closes
+            );
+
+        const atr =
+            calculateATR(
+                candles,
+                14
+            );
+
+
+        if (
+            ema9 === null ||
+            ema21 === null ||
+            rsi === null ||
+            macd === null
+        ) {
+
+            return {
+                signal: "NO TRADE",
+                confidence: 0,
+                reason:
+                    "Insufficient indicator data",
+                rsi,
+                macd,
+                ema9,
+                ema21,
+                atr
+            };
+        }
+
+
+        /*
+        -----------------------------------------------
+        SCORE
+        -----------------------------------------------
+        */
+
+        let bullish = 0;
+        let bearish = 0;
+
+
+        // EMA trend
+        if (ema9 > ema21) {
+            bullish++;
+        }
+
+        if (ema9 < ema21) {
+            bearish++;
+        }
+
+
+        // RSI
+        if (
+            rsi >= 52 &&
+            rsi <= 70
+        ) {
+            bullish++;
+        }
+
+        if (
+            rsi <= 48 &&
+            rsi >= 30
+        ) {
+            bearish++;
+        }
+
+
+        // MACD
+        if (macd > 0) {
+            bullish++;
+        }
+
+        if (macd < 0) {
+            bearish++;
+        }
+
+
+        /*
+        -----------------------------------------------
+        RECENT PRICE MOMENTUM
+        -----------------------------------------------
+        */
+
+        const last =
+            closes[
+                closes.length - 1
+            ];
+
+        const previous =
+            closes[
+                closes.length - 2
+            ];
+
+
+        if (last > previous) {
+            bullish++;
+        }
+
+        if (last < previous) {
+            bearish++;
+        }
+
+
+        /*
+        -----------------------------------------------
+        DECISION
+        -----------------------------------------------
+        */
+
+        let signal =
+            "NO TRADE";
+
+        let confidence = 0;
+
+        let reason =
+            "Indicators are not sufficiently aligned";
+
+
+        if (
+            bullish >= 3 &&
+            bullish > bearish
+        ) {
+
+            signal = "UP";
+
+            confidence =
+                Math.round(
+                    50 +
+                    (
+                        bullish -
+                        bearish
+                    ) * 10
+                );
+
+            reason =
+                "Bullish alignment: EMA + momentum + MACD";
+
+        }
+
+        else if (
+            bearish >= 3 &&
+            bearish > bullish
+        ) {
+
+            signal = "DOWN";
+
+            confidence =
+                Math.round(
+                    50 +
+                    (
+                        bearish -
+                        bullish
+                    ) * 10
+                );
+
+            reason =
+                "Bearish alignment: EMA + momentum + MACD";
+
+        }
+
+
+        confidence =
+            Math.max(
+                0,
+                Math.min(
+                    confidence,
+                    85
+                )
+            );
+
+
+        return {
+
+            signal,
+
+            confidence,
+
+            reason,
+
+            rsi,
+
+            macd,
+
+            ema9,
+
+            ema21,
+
+            atr
+
+        };
+    }
+
+
+    /*
+    =====================================================
+    GENERATE SIGNAL
+    =====================================================
+    */
+
+    async function generateSignal() {
+
+        if (loading) {
+            return;
+        }
+
+        loading = true;
+
+
+        const btn =
+            document.getElementById(
+                "generateBtn"
+            );
+
+        btn.textContent =
+            "ANALYZING...";
+
+
+        setStatus(
+            "LOADING DATA",
+            "yellow"
+        );
+
+
+        try {
+
+            const data =
+                await getMarketData();
+
+
+            const candles =
+                aggregateCandles(
+                    data.candles,
+                    currentTimeframe
+                );
+
+
+            if (
+                candles.length < 30
+            ) {
+
+                throw new Error(
+                    "Not enough candles for analysis"
+                );
+            }
+
+
+            currentCandles =
+                candles;
+
+
+            renderChart(
+                candles
+            );
+
+
+            const result =
+                analyzeMarket(
+                    candles
+                );
+
+
+            displayResult(
+                result
+            );
+
+
+            setStatus(
+                "LIVE DATA",
+                "green"
+            );
+
+
+            const age =
+                data.market?.ageSeconds ?? 0;
+
+
+            document.getElementById(
+                "dataAge"
+            ).textContent =
+                "Age: " +
+                age +
+                "s";
+
+
+        } catch (error) {
+
+            console.error(
+                "BTZ SIGNAL ERROR:",
+                error
+            );
+
+
+            showNoTrade(
+                error.message
+            );
+
+
+            setStatus(
+                "NO VALID DATA",
+                "red"
+            );
+
+        } finally {
+
+            loading = false;
+
+            btn.textContent =
+                "GENERATE AI SIGNAL";
+        }
+    }
+
+
+    /*
+    =====================================================
+    DISPLAY RESULT
+    =====================================================
+    */
+
+    function displayResult(
+        result
+    ) {
+
+        document.getElementById(
+            "rsi"
+        ).textContent =
+            result.rsi !== null
+                ? Number(
+                    result.rsi
+                  ).toFixed(1)
+                : "--";
+
+
+        document.getElementById(
+            "macd"
+        ).textContent =
+            result.macd !== null
+                ? Number(
+                    result.macd
+                  ).toFixed(6)
+                : "--";
+
+
+        document.getElementById(
+            "ema"
+        ).textContent =
+            result.ema9 !== null &&
+            result.ema21 !== null
+                ? (
+                    result.ema9 >
+                    result.ema21
+                        ? "UP"
+                        : "DOWN"
+                  )
+                : "--";
+
+
+        document.getElementById(
+            "adx"
+        ).textContent =
+            "N/A";
+
+
+        document.getElementById(
+            "support"
+        ).textContent =
+            currentCandles.length
+                ? Math.min(
+                    ...currentCandles
+                        .slice(-20)
+                        .map(c => c.low)
+                  ).toFixed(5)
+                : "--";
+
+
+        document.getElementById(
+            "resistance"
+        ).textContent =
+            currentCandles.length
+                ? Math.max(
+                    ...currentCandles
+                        .slice(-20)
+                        .map(c => c.high)
+                  ).toFixed(5)
+                : "--";
+
+
+        document.getElementById(
+            "atr"
+        ).textContent =
+            result.atr !== null
+                ? Number(
+                    result.atr
+                  ).toFixed(5)
+                : "--";
+
+
+        const signalEl =
+            document.getElementById(
+                "signal"
+            );
+
+
+        const confidenceEl =
+            document.getElementById(
+                "confidence"
+            );
+
+
+        const reasonEl =
+            document.getElementById(
+                "reason"
+            );
+
+
+        if (
+            result.signal === "UP"
+        ) {
+
+            signalEl.textContent =
+                "UP";
+
+            signalEl.className =
+                "text-3xl font-black text-green-500 mt-1";
+
+            confidenceEl.textContent =
+                "Confidence: " +
+                result.confidence +
+                "%";
+
+        }
+
+        else if (
+            result.signal === "DOWN"
+        ) {
+
+            signalEl.textContent =
+                "DOWN";
+
+            signalEl.className =
+                "text-3xl font-black text-red-500 mt-1";
+
+            confidenceEl.textContent =
+                "Confidence: " +
+                result.confidence +
+                "%";
+
+        }
+
+        else {
+
+            signalEl.textContent =
+                "NO TRADE";
+
+            signalEl.className =
+                "text-3xl font-black text-yellow-400 mt-1";
+
+            confidenceEl.textContent =
+                "Confidence: 0%";
+        }
+
+
+        reasonEl.textContent =
+            result.reason || "--";
+    }
+
+
+    /*
+    =====================================================
+    NO TRADE
+    =====================================================
+    */
+
+    function showNoTrade(
+        reason
+    ) {
+
+        const signal =
+            document.getElementById(
+                "signal"
+            );
+
+        const confidence =
+            document.getElementById(
+                "confidence"
+            );
+
+        const reasonEl =
+            document.getElementById(
+                "reason"
+            );
+
+
+        signal.textContent =
+            "NO TRADE";
+
+
+        signal.className =
+            "text-3xl font-black text-yellow-400 mt-1";
+
+
+        confidence.textContent =
+            "Confidence: 0%";
+
+
+        reasonEl.textContent =
+            reason ||
+            "Waiting for valid market data";
+    }
+
+
+    function clearSignal() {
+
+        showNoTrade(
+            "Ready for market analysis"
+        );
+
+        setStatus(
+            "READY",
+            "yellow"
+        );
+
+        document.getElementById(
+            "dataAge"
+        ).textContent =
+            "--";
+    }
+
+
+    /*
+    =====================================================
+    STATUS
+    =====================================================
+    */
+
+    function setStatus(
+        text,
+        type
+    ) {
+
+        const status =
+            document.getElementById(
+                "dataStatus"
+            );
+
+        const dot =
+            document.getElementById(
+                "statusDot"
+            );
+
+
+        status.textContent =
+            text;
+
+
+        if (type === "green") {
+
+            dot.className =
+                "status-dot bg-green-500";
+
+        }
+
+        else if (type === "red") {
+
+            dot.className =
+                "status-dot bg-red-500";
+
+        }
+
+        else {
+
+            dot.className =
+                "status-dot bg-yellow-500";
+        }
+    }
+
+
+    /*
+    =====================================================
+    CHART
+    =====================================================
+    */
+
+    function renderChart(
+        candles
+    ) {
+
+        const container =
+            document.getElementById(
+                "candles"
+            );
+
+        container.innerHTML = "";
+
+
+        const visible =
+            candles.slice(-40);
+
+
+        if (!visible.length) {
+            return;
+        }
+
+
+        const highest =
+            Math.max(
+                ...visible.map(
+                    c => c.high
+                )
+            );
+
+
+        const lowest =
+            Math.min(
+                ...visible.map(
+                    c => c.low
+                )
+            );
+
+
+        const range =
+            highest -
+            lowest ||
+            0.0001;
+
+
+        visible.forEach(
+            (candle,index) => {
+
+                const x =
+                    (
+                        index /
+                        Math.max(
+                            visible.length - 1,
+                            1
+                        )
+                    ) * 96 + 2;
+
+
+                const highY =
+                    (
+                        (
+                            highest -
+                            candle.high
+                        ) /
+                        range
+                    ) * 90;
+
+
+                const lowY =
+                    (
+                        (
+                            highest -
+                            candle.low
+                        ) /
+                        range
+                    ) * 90;
+
+
+                const openY =
+                    (
+                        (
+                            highest -
+                            candle.open
+                        ) /
+                        range
+                    ) * 90;
+
+
+                const closeY =
+                    (
+                        (
+                            highest -
+                            candle.close
+                        ) /
+                        range
+                    ) * 90;
+
+
+                const bodyTop =
+                    Math.min(
+                        openY,
+                        closeY
+                    );
+
+
+                const bodyHeight =
+                    Math.max(
+                        Math.abs(
+                            closeY -
+                            openY
+                        ),
+                        1.5
+                    );
+
+
+                const bullish =
+                    candle.close >=
+                    candle.open;
+
+
+                const color =
+                    bullish
+                        ? "green"
+                        : "red";
+
+
+                const wrap =
+                    document.createElement(
+                        "div"
+                    );
+
+                wrap.className =
+                    "candle-wrap";
+
+
+                wrap.style.left =
+                    x + "%";
+
+
+                const wick =
+                    document.createElement(
+                        "div"
+                    );
+
+                wick.className =
+                    "wick " +
+                    color;
+
+
+                wick.style.top =
+                    highY + "%";
+
+
+                wick.style.height =
+                    Math.max(
+                        lowY -
+                        highY,
+                        1
+                    ) + "%";
+
+
+                const body =
+                    document.createElement(
+                        "div"
+                    );
+
+                body.className =
+                    "body " +
+                    color;
+
+
+                body.style.top =
+                    bodyTop + "%";
+
+
+                body.style.height =
+                    bodyHeight + "%";
+
+
+                wrap.appendChild(
+                    wick
+                );
+
+                wrap.appendChild(
+                    body
+                );
+
+                container.appendChild(
+                    wrap
+                );
+
+            }
+        );
+
+
+        const latest =
+            visible[
+                visible.length - 1
+            ];
+
+
+        const pricePosition =
+            (
+                (
+                    highest -
+                    latest.close
+                ) /
+                range
+            ) * 100;
+
+
+        const safePosition =
+            Math.max(
+                2,
+                Math.min(
+                    98,
+                    pricePosition
+                )
+            );
+
+
+        document.getElementById(
+            "priceLine"
+        ).style.top =
+            safePosition + "%";
+
+
+        document.getElementById(
+            "priceLabel"
+        ).style.top =
+            Math.max(
+                2,
+                Math.min(
+                    95,
+                    pricePosition
+                )
+            ) + "%";
+
+
+        document.getElementById(
+            "priceLabel"
+        ).textContent =
+            latest.close;
+    }
+
+
+    /*
+    =====================================================
+    BANGLADESH CLOCK
+    =====================================================
+    */
+
+    function updateClock() {
+
+        const now =
+            new Date();
+
+
+        const formatter =
+            new Intl.DateTimeFormat(
+                "en-GB",
+                {
+                    timeZone:
+                        "Asia/Dhaka",
+
+                    hour:
+                        "2-digit",
+
+                    minute:
+                        "2-digit",
+
+                    second:
+                        "2-digit",
+
+                    hour12:
+                        false
+                }
+            );
+
+
+        document.getElementById(
+            "liveClock"
+        ).textContent =
+            formatter.format(now);
+
+
+        const minute =
+            now.toLocaleString(
+                "en-US",
+                {
+                    timeZone:
+                        "Asia/Dhaka",
+
+                    minute:
+                        "numeric"
+                }
+            );
+
+
+        const second =
+            now.toLocaleString(
+                "en-US",
+                {
+                    timeZone:
+                        "Asia/Dhaka",
+
+                    second:
+                        "numeric"
+                }
+            );
+
+
+        const m =
+            Number(minute);
+
+        const s =
+            Number(second);
+
+
+        let nextMinute =
+            Math.floor(
+                m /
+                currentTimeframe
+            ) *
+            currentTimeframe +
+            currentTimeframe;
+
+
+        let hour =
+            Number(
+                now.toLocaleString(
+                    "en-US",
+                    {
+                        timeZone:
+                            "Asia/Dhaka",
+
+                        hour:
+                            "numeric",
+
+                        hour12:
+                            false
+                    }
+                )
+            );
+
+
+        if (
+            nextMinute >= 60
+        ) {
+
+            nextMinute -= 60;
+
+            hour =
+                (hour + 1) % 24;
+        }
+
+
+        document.getElementById(
+            "nextCandle"
+        ).textContent =
+            String(hour).padStart(2,"0") +
+            ":" +
+            String(nextMinute).padStart(2,"0");
+    }
+
+
+    /*
+    =====================================================
+    AUTO CLOCK
+    =====================================================
+    */
+
+    setInterval(
+        updateClock,
+        1000
+    );
+
+
+    /*
+    =====================================================
+    OPTIONAL DATA REFRESH
+    =====================================================
+    */
+
+    setInterval(
+        () => {
+
+            if (
+                !document.hidden &&
+                currentMarket === "REAL"
+            ) {
+
+                /*
+                Only refresh the chart/data.
+                It does NOT automatically generate
+                a new trade signal.
+                */
+
+                if (!loading) {
+
+                    refreshChartOnly();
+                }
+            }
+
+        },
+        60000
+    );
+
+
+    async function refreshChartOnly() {
+
+        try {
+
+            const data =
+                await getMarketData();
+
+
+            const candles =
+                aggregateCandles(
+                    data.candles,
+                    currentTimeframe
+                );
+
+
+            currentCandles =
+                candles;
+
+
+            renderChart(
+                candles
+            );
+
+
+            document.getElementById(
+                "dataAge"
+            ).textContent =
+                "Age: " +
+                (
+                    data.market?.ageSeconds ??
+                    0
+                ) +
+                "s";
+
+
+            setStatus(
+                "LIVE DATA",
+                "green"
+            );
+
+        } catch (error) {
+
+            console.log(
+                "Chart refresh:",
+                error.message
+            );
+        }
+    }
+
+
+    /*
+    =====================================================
+    START
+    =====================================================
+    */
+
+    loadPairs();
+
+    updateClock();
+
+</script>
+
+</body>
+</html>
