@@ -1,1 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>Finorix AI Market Pro</title>
+
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+  margin:0;
+  padding:0;
+  width:100%;
+  min-height:100%;
+  background:#05070d;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+  padding:8px;
+}
+
+.app{
+  width:100%;
+  max-width:950px;
+  margin:0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header{
+  background:linear-gradient(135deg,#10182c,#080b15);
+  border:1px solid #28365e;
+  border-radius:18px 18px 0 0;
+  padding:15px;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.title{
+  font-size:20px;
+  font-weight:700;
+}
+
+.market{
+  margin-top:7px;
+  font-size:14px;
+  color:#00e6a0;
+}
+
+.live-dot{
+  display:inline-block;
+  width:9px;
+  height:9px;
+
+  background:#00e6a0;
+
+  border-radius:50%;
+
+  margin-right:6px;
+
+  box-shadow:0 0 10px #00e6a0;
+}
+
+.timeframe{
+  background:#182343;
+
+  padding:11px 15px;
+
+  border-radius:10px;
+
+  font-weight:bold;
+}
+
+
+/* =========================================================
+   CHART
+========================================================= */
+
+.chart-box{
+  position:relative;
+
+  width:100%;
+  height:480px;
+
+  background:#080c17;
+
+  border-left:1px solid #28365e;
+  border-right:1px solid #28365e;
+
+  overflow:hidden;
+}
+
+#chart{
+  width:100%;
+  height:100%;
+}
+
+
+/* STATUS */
+
+.status{
+  position:absolute;
+
+  top:10px;
+  left:10px;
+
+  z-index:5;
+
+  background:rgba(0,0,0,.65);
+
+  padding:8px 11px;
+
+  border-radius:8px;
+
+  font-size:12px;
+}
+
+
+/* =========================================================
+   CANDLE TIMER
+========================================================= */
+
+.candle-timer{
+  position:absolute;
+
+  top:10px;
+  right:10px;
+
+  z-index:6;
+
+  background:rgba(0,0,0,.72);
+
+  border:1px solid rgba(255,255,255,.12);
+
+  padding:8px 11px;
+
+  border-radius:8px;
+
+  text-align:center;
+
+  min-width:105px;
+}
+
+.timer-label{
+  font-size:9px;
+
+  color:#8f99ae;
+
+  letter-spacing:.4px;
+}
+
+.timer-value{
+  margin-top:2px;
+
+  font-size:15px;
+
+  font-weight:bold;
+
+  color:#00e6a0;
+
+  font-variant-numeric:tabular-nums;
+}
+
+.timer-value.warning{
+  color:#ffd21c;
+}
+
+.timer-value.danger{
+  color:#ff536d;
+}
+
+.current-candle-time{
+  margin-top:2px;
+
+  font-size:9px;
+
+  color:#9ba4b7;
+
+  font-variant-numeric:tabular-nums;
+}
+
+
+/* ADVANCE */
+
+.advance-line{
+  position:absolute;
+
+  top:0;
+  bottom:0;
+
+  right:17%;
+
+  border-left:2px dashed rgba(255,255,255,.65);
+
+  pointer-events:none;
+
+  z-index:4;
+}
+
+.advance-label{
+  position:absolute;
+
+  top:20px;
+
+  right:calc(17% - 38px);
+
+  font-size:13px;
+
+  font-weight:bold;
+
+  color:#fff;
+
+  z-index:4;
+}
+
+
+/* PRICE */
+
+.price{
+  position:absolute;
+
+  right:7px;
+  top:45%;
+
+  background:#168cff;
+
+  padding:7px 10px;
+
+  border-radius:7px;
+
+  font-weight:bold;
+
+  font-size:13px;
+
+  z-index:5;
+}
+
+
+/* =========================================================
+   BOTTOM SIGNAL
+========================================================= */
+
+.bottom{
+  background:linear-gradient(135deg,#10182c,#080b15);
+
+  border:1px solid #28365e;
+
+  padding:17px;
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:center;
+}
+
+.signal-title,
+.confidence-title{
+  font-size:12px;
+
+  color:#9ba4b7;
+}
+
+.signal{
+  margin-top:5px;
+
+  font-size:28px;
+
+  font-weight:bold;
+}
+
+.confidence{
+  margin-top:5px;
+
+  color:#ffd21c;
+
+  font-size:27px;
+
+  font-weight:bold;
+}
+
+
+/* =========================================================
+   ANALYSIS
+========================================================= */
+
+.analysis{
+  background:linear-gradient(135deg,#10182c,#080b15);
+
+  border:1px solid #28365e;
+
+  border-radius:0 0 18px 18px;
+
+  padding:15px;
+}
+
+.analysis-title{
+  font-size:15px;
+
+  color:#aeb8cc;
+
+  margin-bottom:12px;
+}
+
+.analysis-grid{
+  display:grid;
+
+  grid-template-columns:repeat(3,1fr);
+
+  gap:10px;
+}
+
+.card{
+  border:1px solid #263454;
+
+  background:#080c19;
+
+  border-radius:12px;
+
+  padding:13px 8px;
+
+  text-align:center;
+}
+
+.card-title{
+  font-size:11px;
+
+  color:#8f99ae;
+}
+
+.card-value{
+  margin-top:7px;
+
+  font-size:16px;
+
+  font-weight:bold;
+}
+
+
+/* =========================================================
+   EXTRA INFO
+========================================================= */
+
+.info{
+  margin-top:10px;
+
+  display:grid;
+
+  grid-template-columns:repeat(2,1fr);
+
+  gap:10px;
+}
+
+.info-card{
+  background:#080c19;
+
+  border:1px solid #263454;
+
+  border-radius:12px;
+
+  padding:12px;
+}
+
+.info-label{
+  color:#8994aa;
+
+  font-size:11px;
+}
+
+.info-value{
+  margin-top:5px;
+
+  font-size:14px;
+
+  font-weight:bold;
+}
+
+
+/* =========================================================
+   COLORS
+========================================================= */
+
+.up{
+  color:#00e6a0 !important;
+}
+
+.down{
+  color:#ff536d !important;
+}
+
+.neutral{
+  color:#ffd21c !important;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media(max-width:600px){
+
+  body{
+    padding:0;
+  }
+
+  .app{
+    max-width:none;
+  }
+
+  .header{
+    border-radius:0;
+
+    padding:14px;
+  }
+
+  .title{
+    font-size:18px;
+  }
+
+  .market{
+    font-size:13px;
+  }
+
+  .timeframe{
+    padding:10px 13px;
+
+    font-size:13px;
+  }
+
+  .chart-box{
+    height:470px;
+
+    border-left:0;
+    border-right:0;
+  }
+
+  .bottom{
+    padding:15px;
+  }
+
+  .analysis{
+    border-radius:0;
+  }
+
+  .analysis-grid{
+    gap:7px;
+  }
+
+  .card{
+    padding:11px 5px;
+  }
+
+  .card-value{
+    font-size:14px;
+  }
+
+  .info{
+    gap:7px;
+  }
+
+  .candle-timer{
+    top:9px;
+    right:9px;
+
+    min-width:96px;
+
+    padding:7px 9px;
+  }
+
+  .timer-value{
+    font-size:14px;
+  }
+
+}
+
+@media(max-width:380px){
+
+  .chart-box{
+    height:430px;
+  }
+
+  .title{
+    font-size:16px;
+  }
+
+  .confidence,
+  .signal{
+    font-size:24px;
+  }
+
+  .candle-timer{
+    min-width:90px;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="app">
+
+
+<!-- =====================================================
+     HEADER
+===================================================== -->
+
+<div class="header">
+
+  <div>
+
+    <div class="title">
+      Finorix AI Market Pro
+    </div>
+
+    <div class="market">
+
+      <span class="live-dot"></span>
+
+      <span id="marketName">
+        EUR/USD
+      </span>
+
+      <strong id="liveText">
+        LIVE
+      </strong>
+
+    </div>
+
+  </div>
+
+
+  <div class="timeframe">
+    1min
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     CHART
+===================================================== -->
+
+<div class="chart-box">
+
+  <div id="chart"></div>
+
+
+  <div class="status" id="status">
+    Connecting...
+  </div>
+
+
+  <!-- CANDLE TIMER -->
+
+  <div class="candle-timer">
+
+    <div class="timer-label">
+      NEXT CANDLE IN
+    </div>
+
+    <div
+      class="timer-value"
+      id="candleTimer"
+    >
+      01:00
+    </div>
+
+    <div
+      class="current-candle-time"
+      id="currentCandleTime"
+    >
+      --:--:00
+    </div>
+
+  </div>
+
+
+  <div class="advance-line"></div>
+
+
+  <div class="advance-label">
+    ADVANCE
+  </div>
+
+
+  <div class="price" id="price">
+    --
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     SIGNAL
+===================================================== -->
+
+<div class="bottom">
+
+  <div>
+
+    <div class="signal-title">
+      AI SIGNAL
+    </div>
+
+    <div
+      class="signal neutral"
+      id="signal"
+    >
+      WAIT
+    </div>
+
+  </div>
+
+
+  <div style="text-align:right">
+
+    <div class="confidence-title">
+      CONFIDENCE
+    </div>
+
+    <div
+      class="confidence"
+      id="confidence"
+    >
+      --%
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     ANALYSIS
+===================================================== -->
+
+<div class="analysis">
+
+  <div class="analysis-title">
+    MARKET ANALYSIS
+  </div>
+
+
+  <div class="analysis-grid">
+
+
+    <div class="card">
+
+      <div class="card-title">
+        RSI (14)
+      </div>
+
+      <div
+        class="card-value neutral"
+        id="rsi"
+      >
+        --
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-title">
+        EMA TREND
+      </div>
+
+      <div
+        class="card-value neutral"
+        id="ema"
+      >
+        WAIT
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-title">
+        MACD
+      </div>
+
+      <div
+        class="card-value neutral"
+        id="macd"
+      >
+        WAIT
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="info">
+
+
+    <div class="info-card">
+
+      <div class="info-label">
+        LAST PRICE
+      </div>
+
+      <div
+        class="info-value"
+        id="lastPrice"
+      >
+        --
+      </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+      <div class="info-label">
+        NEXT CANDLE
+      </div>
+
+      <div
+        class="info-value"
+        id="nextCandle"
+      >
+        WAIT
+      </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+      <div class="info-label">
+        CANDLES
+      </div>
+
+      <div
+        class="info-value"
+        id="candleCount"
+      >
+        0
+      </div>
+
+    </div>
+
+
+    <div class="info-card">
+
+      <div class="info-label">
+        UPDATE
+      </div>
+
+      <div
+        class="info-value"
+        id="updateTime"
+      >
+        --
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   FINORIX AI MARKET PRO
+   FRONTEND ENGINE
+========================================================= */
+
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+
+const SYMBOL = "EUR/USD";
+
+const INTERVAL = "1min";
+
+
+const API_URL =
+  "/api/market?symbol=" +
+  encodeURIComponent(SYMBOL) +
+  "&interval=" +
+  INTERVAL;
+
+
+/*
+  15 seconds keeps the market reasonably fresh
+  without creating an unnecessary request every second.
+*/
+
+const REFRESH_MS = 15000;
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const chartElement =
+  document.getElementById("chart");
+
+const statusElement =
+  document.getElementById("status");
+
+const priceElement =
+  document.getElementById("price");
+
+const signalElement =
+  document.getElementById("signal");
+
+const confidenceElement =
+  document.getElementById("confidence");
+
+const rsiElement =
+  document.getElementById("rsi");
+
+const emaElement =
+  document.getElementById("ema");
+
+const macdElement =
+  document.getElementById("macd");
+
+const lastPriceElement =
+  document.getElementById("lastPrice");
+
+const nextCandleElement =
+  document.getElementById("nextCandle");
+
+const candleCountElement =
+  document.getElementById("candleCount");
+
+const updateTimeElement =
+  document.getElementById("updateTime");
+
+
+/* TIMER ELEMENTS */
+
+const candleTimerElement =
+  document.getElementById("candleTimer");
+
+const currentCandleTimeElement =
+  document.getElementById("currentCandleTime");
+
+
+/* =========================================================
+   CHART
+========================================================= */
+
+const chart =
+  LightweightCharts.createChart(
+    chartElement,
+    {
+
+      layout:{
+        background:{
+          color:"#080c17"
+        },
+
+        textColor:"#aeb8cc"
+      },
+
+
+      width:
+        chartElement.clientWidth,
+
+      height:
+        chartElement.clientHeight,
+
+
+      grid:{
+        vertLines:{
+          color:"rgba(255,255,255,0.06)"
+        },
+
+        horzLines:{
+          color:"rgba(255,255,255,0.06)"
+        }
+      },
+
+
+      rightPriceScale:{
+        borderColor:"#263454",
+
+        scaleMargins:{
+          top:0.08,
+          bottom:0.12
+        }
+      },
+
+
+      timeScale:{
+        borderColor:"#263454",
+
+        timeVisible:true,
+
+        /*
+          1-minute candle timestamp is always
+          at second 00.
+        */
+
+        secondsVisible:false,
+
+        rightOffset:8,
+
+        barSpacing:7,
+
+        minBarSpacing:2
+      },
+
+
+      crosshair:{
+        mode:
+          LightweightCharts.CrosshairMode.Normal
+      }
+
+    }
+  );
+
+
+/* =========================================================
+   CANDLE SERIES
+========================================================= */
+
+const candleSeries =
+  chart.addCandlestickSeries({
+
+    upColor:"#00d6a0",
+
+    downColor:"#ff536d",
+
+    borderUpColor:"#00d6a0",
+
+    borderDownColor:"#ff536d",
+
+    wickUpColor:"#00d6a0",
+
+    wickDownColor:"#ff536d",
+
+    priceLineVisible:true,
+
+    lastValueVisible:true
+
+  });
+
+
+/* =========================================================
+   DATA HELPERS
+========================================================= */
+
+function normalizeTime(value){
+
+  if(typeof value === "number"){
+
+    if(value > 1000000000000){
+
+      return Math.floor(
+        value / 1000
+      );
+
+    }
+
+    return Math.floor(value);
+
+  }
+
+
+  if(!value){
+    return null;
+  }
+
+
+  let date =
+    new Date(value);
+
+
+  if(isNaN(date.getTime())){
+
+    const today =
+      new Date();
+
+    const parts =
+      String(value).split(":");
+
+
+    if(parts.length >= 2){
+
+      today.setHours(
+
+        Number(parts[0]) || 0,
+
+        Number(parts[1]) || 0,
+
+        Number(parts[2]) || 0,
+
+        0
+
+      );
+
+      date = today;
+    }
+  }
+
+
+  if(isNaN(date.getTime())){
+
+    return null;
+
+  }
+
+
+  return Math.floor(
+    date.getTime() / 1000
+  );
+
+}
+
+
+/* =========================================================
+   NORMALIZE CANDLES
+========================================================= */
+
+function normalizeCandles(raw){
+
+  if(!Array.isArray(raw)){
+
+    return [];
+
+  }
+
+
+  const result = [];
+
+
+  for(const item of raw){
+
+    if(!item){
+      continue;
+    }
+
+
+    const time =
+      normalizeTime(
+        item.time ??
+        item.datetime ??
+        item.timestamp
+      );
+
+
+    const open =
+      Number(item.open);
+
+    const high =
+      Number(item.high);
+
+    const low =
+      Number(item.low);
+
+    const close =
+      Number(item.close);
+
+
+    if(
+
+      !time ||
+
+      !Number.isFinite(open) ||
+
+      !Number.isFinite(high) ||
+
+      !Number.isFinite(low) ||
+
+      !Number.isFinite(close)
+
+    ){
+
+      continue;
+
+    }
+
+
+    result.push({
+
+      time,
+
+      open,
+
+      high,
+
+      low,
+
+      close
+
+    });
+
+  }
+
+
+  result.sort(
+    (a,b) =>
+      a.time - b.time
+  );
+
+
+  const unique = [];
+
+
+  for(const candle of result){
+
+    const last =
+      unique[
+        unique.length - 1
+      ];
+
+
+    if(
+
+      last &&
+
+      last.time === candle.time
+
+    ){
+
+      unique[
+        unique.length - 1
+      ] = candle;
+
+    }else{
+
+      unique.push(candle);
+
+    }
+
+  }
+
+
+  return unique;
+
+}
+
+
+/* =========================================================
+   EMA
+========================================================= */
+
+function calculateEMA(
+  values,
+  period
+){
+
+  if(values.length < period){
+
+    return null;
+
+  }
+
+
+  const multiplier =
+    2 / (period + 1);
+
+
+  let ema = 0;
+
+
+  for(
+    let i = 0;
+    i < period;
+    i++
+  ){
+
+    ema += values[i];
+
+  }
+
+
+  ema /= period;
+
+
+  for(
+    let i = period;
+    i < values.length;
+    i++
+  ){
+
+    ema =
+      (
+        values[i] - ema
+      ) * multiplier + ema;
+
+  }
+
+
+  return ema;
+
+}
+
+
+/* =========================================================
+   RSI
+========================================================= */
+
+function calculateRSI(
+  values,
+  period = 14
+){
+
+  if(values.length <= period){
+
+    return null;
+
+  }
+
+
+  let gains = 0;
+
+  let losses = 0;
+
+
+  for(
+    let i = 1;
+    i <= period;
+    i++
+  ){
+
+    const change =
+      values[i] -
+      values[i - 1];
+
+
+    if(change >= 0){
+
+      gains += change;
+
+    }else{
+
+      losses +=
+        Math.abs(change);
+
+    }
+
+  }
+
+
+  let avgGain =
+    gains / period;
+
+  let avgLoss =
+    losses / period;
+
+
+  for(
+    let i = period + 1;
+    i < values.length;
+    i++
+  ){
+
+    const change =
+      values[i] -
+      values[i - 1];
+
+
+    const gain =
+      Math.max(change,0);
+
+    const loss =
+      Math.max(-change,0);
+
+
+    avgGain =
+      (
+        avgGain * (period - 1) +
+        gain
+      ) / period;
+
+
+    avgLoss =
+      (
+        avgLoss * (period - 1) +
+        loss
+      ) / period;
+
+  }
+
+
+  if(avgLoss === 0){
+
+    return 100;
+
+  }
+
+
+  const rs =
+    avgGain / avgLoss;
+
+
+  return 100 -
+    (
+      100 /
+      (1 + rs)
+    );
+
+}
+
+
+/* =========================================================
+   MACD
+========================================================= */
+
+function calculateMACD(values){
+
+  if(values.length < 35){
+
+    return {
+
+      macd:null,
+
+      signal:null,
+
+      histogram:null
+
+    };
+
+  }
+
+
+  const ema12 =
+    calculateEMA(
+      values,
+      12
+    );
+
+
+  const ema26 =
+    calculateEMA(
+      values,
+      26
+    );
+
+
+  if(
+
+    ema12 === null ||
+
+    ema26 === null
+
+  ){
+
+    return {
+
+      macd:null,
+
+      signal:null,
+
+      histogram:null
+
+    };
+
+  }
+
+
+  const macd =
+    ema12 - ema26;
+
+
+  const previousValues =
+    values.slice(
+      0,
+      values.length - 1
+    );
+
+
+  let previousMACD = null;
+
+
+  if(previousValues.length >= 35){
+
+    const p12 =
+      calculateEMA(
+        previousValues,
+        12
+      );
+
+
+    const p26 =
+      calculateEMA(
+        previousValues,
+        26
+      );
+
+
+    if(
+
+      p12 !== null &&
+
+      p26 !== null
+
+    ){
+
+      previousMACD =
+        p12 - p26;
+
+    }
+
+  }
+
+
+  const histogram =
+    previousMACD === null
+      ? 0
+      : macd - previousMACD;
+
+
+  return {
+
+    macd,
+
+    signal:
+      previousMACD,
+
+    histogram
+
+  };
+
+}
+
+
+/* =========================================================
+   SIGNAL ENGINE
+========================================================= */
+
+function calculateSignal(candles){
+
+  if(candles.length < 35){
+
+    return {
+
+      signal:"WAIT",
+
+      confidence:0,
+
+      rsi:null,
+
+      emaTrend:"WAIT",
+
+      macdTrend:"WAIT"
+
+    };
+
+  }
+
+
+  const closes =
+    candles.map(
+      c => c.close
+    );
+
+
+  const last =
+    closes[
+      closes.length - 1
+    ];
+
+
+  const previous =
+    closes[
+      closes.length - 2
+    ];
+
+
+  const ema9 =
+    calculateEMA(
+      closes,
+      9
+    );
+
+
+  const ema21 =
+    calculateEMA(
+      closes,
+      21
+    );
+
+
+  const rsi =
+    calculateRSI(
+      closes,
+      14
+    );
+
+
+  const macd =
+    calculateMACD(
+      closes
+    );
+
+
+  let score = 0;
+
+
+  /* EMA */
+
+  let emaTrend =
+    "NEUTRAL";
+
+
+  if(
+
+    ema9 !== null &&
+
+    ema21 !== null
+
+  ){
+
+    if(ema9 > ema21){
+
+      emaTrend = "UP";
+
+      score += 2;
+
+    }else if(ema9 < ema21){
+
+      emaTrend = "DOWN";
+
+      score -= 2;
+
+    }
+
+  }
+
+
+  /* RSI */
+
+  if(rsi !== null){
+
+    if(rsi < 30){
+
+      score += 1;
+
+    }else if(rsi > 70){
+
+      score -= 1;
+
+    }else if(rsi > 50){
+
+      score += 0.5;
+
+    }else{
+
+      score -= 0.5;
+
+    }
+
+  }
+
+
+  /* MACD */
+
+  let macdTrend =
+    "NEUTRAL";
+
+
+  if(macd.macd !== null){
+
+    if(macd.histogram > 0){
+
+      macdTrend =
+        "BULLISH";
+
+      score += 2;
+
+    }else if(macd.histogram < 0){
+
+      macdTrend =
+        "BEARISH";
+
+      score -= 2;
+
+    }
+
+  }
+
+
+  /* LAST CANDLE */
+
+  if(last > previous){
+
+    score += 0.5;
+
+  }else if(last < previous){
+
+    score -= 0.5;
+
+  }
+
+
+  let signal =
+    "WAIT";
+
+
+  if(score >= 2){
+
+    signal =
+      "UP";
+
+  }else if(score <= -2){
+
+    signal =
+      "DOWN";
+
+  }
+
+
+  let confidence =
+    50 +
+    Math.abs(score) * 8;
+
+
+  confidence =
+    Math.min(
+      94,
+      Math.max(
+        50,
+        Math.round(confidence)
+      )
+    );
+
+
+  return {
+
+    signal,
+
+    confidence,
+
+    rsi,
+
+    emaTrend,
+
+    macdTrend,
+
+    ema9,
+
+    ema21,
+
+    macd:
+      macd.macd
+
+  };
+
+}
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+function setSignalUI(result){
+
+  signalElement.classList.remove(
+    "up",
+    "down",
+    "neutral"
+  );
+
+
+  if(result.signal === "UP"){
+
+    signalElement.textContent =
+      "UP";
+
+    signalElement.classList.add(
+      "up"
+    );
+
+  }else if(
+    result.signal === "DOWN"
+  ){
+
+    signalElement.textContent =
+      "DOWN";
+
+    signalElement.classList.add(
+      "down"
+    );
+
+  }else{
+
+    signalElement.textContent =
+      "WAIT";
+
+    signalElement.classList.add(
+      "neutral"
+    );
+
+  }
+
+
+  confidenceElement.textContent =
+    result.confidence
+      ? result.confidence + "%"
+      : "--%";
+
+
+  rsiElement.textContent =
+    result.rsi === null
+      ? "--"
+      : result.rsi.toFixed(1);
+
+
+  rsiElement.classList.remove(
+    "up",
+    "down",
+    "neutral"
+  );
+
+
+  if(result.rsi !== null){
+
+    if(result.rsi > 70){
+
+      rsiElement.classList.add(
+        "down"
+      );
+
+    }else if(result.rsi < 30){
+
+      rsiElement.classList.add(
+        "up"
+      );
+
+    }else{
+
+      rsiElement.classList.add(
+        "neutral"
+      );
+
+    }
+
+  }
+
+
+  emaElement.textContent =
+    result.emaTrend;
+
+
+  emaElement.classList.remove(
+    "up",
+    "down",
+    "neutral"
+  );
+
+
+  if(result.emaTrend === "UP"){
+
+    emaElement.classList.add(
+      "up"
+    );
+
+  }else if(
+    result.emaTrend === "DOWN"
+  ){
+
+    emaElement.classList.add(
+      "down"
+    );
+
+  }else{
+
+    emaElement.classList.add(
+      "neutral"
+    );
+
+  }
+
+
+  macdElement.textContent =
+    result.macdTrend;
+
+
+  macdElement.classList.remove(
+    "up",
+    "down",
+    "neutral"
+  );
+
+
+  if(result.macdTrend === "BULLISH"){
+
+    macdElement.classList.add(
+      "up"
+    );
+
+  }else if(
+    result.macdTrend === "BEARISH"
+  ){
+
+    macdElement.classList.add(
+      "down"
+    );
+
+  }else{
+
+    macdElement.classList.add(
+      "neutral"
+    );
+
+  }
+
+
+  nextCandleElement.textContent =
+    result.signal;
+
+}
+
+
+/* =========================================================
+   MARKET STATE
+========================================================= */
+
+let currentCandles = [];
+
+let firstChartLoad = true;
+
+let lastLoadedCandleTime = null;
+
+let lastRefreshMinute = null;
+
+
+/* =========================================================
+   LOAD MARKET
+========================================================= */
+
+async function loadMarket(){
+
+  try{
+
+    statusElement.textContent =
+      "Updating market...";
+
+
+    const response =
+      await fetch(
+
+        API_URL,
+
+        {
+
+          method:"GET",
+
+          cache:"no-store",
+
+          headers:{
+            "Cache-Control":"no-cache"
+          }
+
+        }
+
+      );
+
+
+    if(!response.ok){
+
+      throw new Error(
+        "HTTP " +
+        response.status
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    let rawCandles = [];
+
+
+    if(Array.isArray(data)){
+
+      rawCandles =
+        data;
+
+    }else if(
+      Array.isArray(
+        data.candles
+      )
+    ){
+
+      rawCandles =
+        data.candles;
+
+    }else if(
+
+      data.data &&
+
+      Array.isArray(
+        data.data.candles
+      )
+
+    ){
+
+      rawCandles =
+        data.data.candles;
+
+    }
+
+
+    const candles =
+      normalizeCandles(
+        rawCandles
+      );
+
+
+    if(!candles.length){
+
+      throw new Error(
+        "No valid candle data"
+      );
+
+    }
+
+
+    /*
+      IMPORTANT:
+      Do not destroy existing chart data
+      if a temporary API problem happens.
+    */
+
+    currentCandles =
+      candles;
+
+
+    /* =====================================================
+       UPDATE MARKET NAME
+    ===================================================== */
+
+    const apiSymbol =
+      data?.symbol ||
+      SYMBOL;
+
+
+    const marketNameElement =
+      document.getElementById(
+        "marketName"
+      );
+
+
+    if(marketNameElement){
+
+      marketNameElement.textContent =
+        apiSymbol;
+
+    }
+
+
+    /* =====================================================
+       UPDATE CHART
+    ===================================================== */
+
+    candleSeries.setData(
+      candles
+    );
+
+
+    const latest =
+      candles[
+        candles.length - 1
+      ];
+
+
+    /*
+      Only fit chart on FIRST LOAD.
+
+      This prevents the chart from jumping
+      every 15 seconds.
+    */
+
+    if(firstChartLoad){
+
+      chart.timeScale()
+        .fitContent();
+
+      firstChartLoad = false;
+
+    }
+
+
+    /* =====================================================
+       LAST PRICE
+    ===================================================== */
+
+    const price =
+      latest.close;
+
+
+    priceElement.textContent =
+      Number(price).toFixed(5);
+
+
+    lastPriceElement.textContent =
+      Number(price).toFixed(5);
+
+
+    candleCountElement.textContent =
+      candles.length;
+
+
+    /* =====================================================
+       LATEST CANDLE TIME
+    ===================================================== */
+
+    lastLoadedCandleTime =
+      latest.time;
+
+
+    /* =====================================================
+       SIGNAL
+    ===================================================== */
+
+    const result =
+      calculateSignal(
+        candles
+      );
+
+
+    setSignalUI(
+      result
+    );
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    statusElement.textContent =
+      "Connected • Twelve Data";
+
+
+    updateTimeElement.textContent =
+      new Date()
+        .toLocaleTimeString();
+
+  }catch(error){
+
+    console.error(
+      "Finorix market error:",
+      error
+    );
+
+
+    /*
+      IMPORTANT:
+      Do NOT clear the existing chart,
+      price or signal when an update fails.
+
+      This prevents the dashboard from
+      disappearing during temporary errors.
+    */
+
+    if(currentCandles.length){
+
+      statusElement.textContent =
+        "Live • Update retrying";
+
+    }else{
+
+      statusElement.textContent =
+        "Connection error";
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   CANDLE TIMER
+========================================================= */
+
+function pad2(value){
+
+  return String(value)
+    .padStart(2,"0");
+
+}
+
+
+function updateCandleTimer(){
+
+  const now =
+    new Date();
+
+
+  const seconds =
+    now.getSeconds();
+
+
+  /*
+    At 00 seconds a new 1-minute candle
+    has just started.
+
+    Therefore the next candle is 60 seconds away.
+  */
+
+  const remaining =
+    seconds === 0
+      ? 60
+      : 60 - seconds;
+
+
+  const minutes =
+    Math.floor(
+      remaining / 60
+    );
+
+
+  const secs =
+    remaining % 60;
+
+
+  candleTimerElement.textContent =
+    pad2(minutes) +
+    ":" +
+    pad2(secs);
+
+
+  /*
+    Timer colors
+  */
+
+  candleTimerElement.classList.remove(
+    "warning",
+    "danger"
+  );
+
+
+  if(remaining <= 10){
+
+    candleTimerElement.classList.add(
+      "danger"
+    );
+
+  }else if(remaining <= 20){
+
+    candleTimerElement.classList.add(
+      "warning"
+    );
+
+  }
+
+
+  /*
+    Current candle start time.
+
+    Example:
+    16:52:00
+  */
+
+  currentCandleTimeElement.textContent =
+    "CANDLE " +
+    pad2(now.getHours()) +
+    ":" +
+    pad2(now.getMinutes()) +
+    ":00";
+
+
+  /*
+    Every new minute:
+    request the newest candle once.
+
+    This is in addition to the normal
+    15-second refresh.
+  */
+
+  const minuteKey =
+    now.getHours() +
+    ":" +
+    now.getMinutes();
+
+
+  if(
+
+    seconds <= 2 &&
+
+    lastRefreshMinute !== minuteKey
+
+  ){
+
+    lastRefreshMinute =
+      minuteKey;
+
+    loadMarket();
+
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE CHART
+========================================================= */
+
+function resizeChart(){
+
+  const width =
+    chartElement.clientWidth;
+
+
+  const height =
+    chartElement.clientHeight;
+
+
+  if(
+
+    width > 0 &&
+
+    height > 0
+
+  ){
+
+    chart.applyOptions({
+
+      width,
+
+      height
+
+    });
+
+  }
+
+}
+
+
+window.addEventListener(
+  "resize",
+  resizeChart
+);
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+loadMarket();
+
+
+/* =========================================================
+   NORMAL MARKET REFRESH
+========================================================= */
+
+setInterval(
+  loadMarket,
+  REFRESH_MS
+);
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+updateCandleTimer();
+
+
+setInterval(
+  updateCandleTimer,
+  1000
+);
+
+
+/* =========================================================
+   VISIBILITY RECOVERY
+========================================================= */
+
+/*
+  If the user leaves Safari/backgrounds the app,
+  refresh immediately when returning.
+*/
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if(
+      document.visibilityState ===
+      "visible"
+    ){
+
+      loadMarket();
+
+      updateCandleTimer();
+
+    }
+
+  }
+);
+
+</script>
+
+</body>
+</html>
